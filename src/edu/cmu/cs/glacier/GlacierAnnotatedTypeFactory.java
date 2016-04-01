@@ -1,5 +1,6 @@
 package edu.cmu.cs.glacier;
 
+import java.lang.reflect.AnnotatedArrayType;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -7,6 +8,7 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
 
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
@@ -24,6 +26,8 @@ import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
+import com.sun.tools.javac.code.Type.AnnotatedType;
+import com.sun.tools.javac.code.Type.ArrayType;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.TreeInfo;
 
@@ -114,6 +118,9 @@ public class GlacierAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 	
 	// TODO: Forbid @Immutable and @Mutable annotations on this-parameters of methods.
 
+	/*
+	 * Returns the declared annotation, if any, on the class containing this tree.
+	 */
 	private AnnotationMirror declaredGlacierAnnotation(Tree tree) {
 		TreePath path = getPath(tree);
         ClassTree enclosingClass = TreeUtils.enclosingClass(path);
@@ -147,6 +154,15 @@ public class GlacierAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 	private void inferAnnotationsForType(Tree tree, AnnotatedTypeMirror type) {
 		switch(type.getUnderlyingType().getKind()) {
 		case ARRAY:
+			// Arrays default to mutable.
+			if (!type.hasAnnotation(IMMUTABLE)) {
+				type.addAnnotation(MUTABLE);
+			}
+			
+			AnnotatedTypeMirror.AnnotatedArrayType annotatedArrayType = (AnnotatedTypeMirror.AnnotatedArrayType)type;
+			AnnotatedTypeMirror annotatedComponentType = annotatedArrayType.getComponentType();
+			
+			inferAnnotationsForType(tree, annotatedComponentType);
 			break;
 		case BOOLEAN:
 			type.addAnnotation(IMMUTABLE);
@@ -168,13 +184,14 @@ public class GlacierAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 				//System.out.println("annotating tree " + tree + ": " + type + " mutable because classes are mutable by default.");
 			}
 			else {
+				//System.out.println("annotating declared type: " + declaredType + " on tree " + tree);
+				// Look up the original declaration of this class and find out its annotation.
 				Element classElt = declaredType.asElement();
 				if (classElt != null) {
 	                AnnotatedTypeMirror classType = fromElement(classElt);
 	                assert classType != null : "Unexpected null type for class element: " + classElt;
 
 	                if (classType.hasAnnotation(IMMUTABLE)) {
-	                	System.out.println("annotating immutable due to class");
 	                	type.addAnnotation(IMMUTABLE);
 	                }
 	                else {
@@ -184,6 +201,12 @@ public class GlacierAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 				else {
 					System.out.println("danger: not annotating declaredType " + declaredType);
 				}
+			}
+			
+			AnnotatedDeclaredType annotatedDeclaredType = (AnnotatedDeclaredType)type;
+			List<? extends AnnotatedTypeMirror> typeArguments = annotatedDeclaredType.getTypeArguments();
+			for (AnnotatedTypeMirror typeArg : typeArguments) {
+				inferAnnotationsForType(tree, typeArg);
 			}
 			break;
 		case DOUBLE:
@@ -196,7 +219,7 @@ public class GlacierAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 			AnnotatedExecutableType methodType = (AnnotatedExecutableType)type;
 			MethodTree methodTree = (MethodTree)tree;
 			List<? extends VariableTree> methodParameters = methodTree.getParameters();
-
+			
 			boolean methodIsConstructor = com.sun.tools.javac.tree.TreeInfo.isConstructor((JCTree)tree);
 			if (methodIsConstructor) {
 				AnnotatedTypeMirror returnType = methodType.getReturnType();
@@ -223,6 +246,9 @@ public class GlacierAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 					returnType.addAnnotation(MUTABLE);
 				}
 			}
+			else {
+				inferAnnotationsForType(methodTree, methodType.getReturnType());
+			}
 			
 			// Infer annotations on parameters.
 			List<AnnotatedTypeMirror> parameterTypes = methodType.getParameterTypes();
@@ -231,6 +257,7 @@ public class GlacierAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 				VariableTree parameter = methodParameters.get(i);
 				inferAnnotationsForType(parameter, parameterType);
 			}
+
 			break;
 		case FLOAT:
 			type.addAnnotation(IMMUTABLE);
@@ -279,9 +306,6 @@ public class GlacierAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 	@Override
 	public void annotateImplicit(Tree tree, @Mutable AnnotatedTypeMirror type, boolean iUseFlow) {
 		//System.out.println("tree annotateImplicit:" + tree + ", " + type);
-		if (type.hasAnnotation(MUTABLE)) {
-			System.out.println("why mutable?");
-		}
 		
 		inferAnnotationsForType(tree, type);
 		
