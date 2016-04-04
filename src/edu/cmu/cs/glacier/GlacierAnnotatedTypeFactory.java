@@ -3,10 +3,15 @@ package edu.cmu.cs.glacier;
 import java.lang.reflect.AnnotatedType;
 import java.lang.reflect.AnnotatedArrayType;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.PrimitiveType;
 import javax.lang.model.type.TypeKind;
@@ -15,11 +20,14 @@ import javax.lang.model.type.TypeMirror;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.source.Result;
+import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.framework.type.ElementAnnotationApplier;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
-
+import org.checkerframework.framework.type.visitor.AnnotatedTypeScanner;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.TreeUtils;
 
@@ -30,6 +38,7 @@ import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
+import com.sun.tools.javac.code.Symbol.MethodSymbol;
 import com.sun.tools.javac.code.Type.ArrayType;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.TreeInfo;
@@ -163,11 +172,11 @@ public class GlacierAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 		// Surely there is a better API for doing this than having to try/catch.
 		try {
 			types.unboxedType(type.getUnderlyingType());
-			System.out.println("found autoboxed immutable class: " + type);
+//			System.out.println("found autoboxed immutable class: " + type);
 			return true;
 		}
 		catch (IllegalArgumentException e) {
-			System.out.println("not an autoboxed immutable class: " + type);
+//			System.out.println("not an autoboxed immutable class: " + type);
 
 			return false;
 		}
@@ -198,7 +207,7 @@ public class GlacierAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 			break;
 		case DECLARED:
 			DeclaredType declaredType = (DeclaredType)type.getUnderlyingType();
-			System.out.println("declared type: " + declaredType);
+//			System.out.println("declared type: " + declaredType);
 			
 			if (tree.getKind() == Tree.Kind.CLASS && !type.hasAnnotation(Immutable.class)) {
 				// Classes are mutable by default.
@@ -223,7 +232,7 @@ public class GlacierAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 	                	type.addAnnotation(IMMUTABLE);
 	                }
 	                else {
-	                	System.out.println("annotating type mutable: " + type);
+//	                	System.out.println("annotating type mutable: " + type);
 	                	type.addAnnotation(MUTABLE);
 	                }
 				}
@@ -281,7 +290,7 @@ public class GlacierAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 			}
 			
 			// Infer annotations on parameters.
-			//System.out.println("inferring annotation on parameters of method of type " + methodType);
+//			System.out.println("inferring annotation on parameters of method of type " + methodType);
 			List<AnnotatedTypeMirror> parameterTypes = methodType.getParameterTypes();
 			for (int i = 0; i < parameterTypes.size(); i++) {
 				AnnotatedTypeMirror parameterType = parameterTypes.get(i);
@@ -293,6 +302,7 @@ public class GlacierAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 			AnnotatedDeclaredType receiverType = methodType.getReceiverType();
 			if (receiverType != null) {
 				inferAnnotationsForType(tree, receiverType);
+//				System.out.println("Inferred receiver type: " + receiverType);
 			}
 
 			break;
@@ -370,12 +380,106 @@ public class GlacierAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 	
 	@Override
 	public void annotateImplicit(Tree tree, @Mutable AnnotatedTypeMirror type, boolean iUseFlow) {
-		System.out.println("tree annotateImplicit:" + tree + ", " + type);
+//		System.out.println("tree annotateImplicit:" + tree + ", " + type);
 		
 		inferAnnotationsForType(tree, type);
 		
-		System.out.println("after tree annotateImplicit:" + tree + ", " + type);
+//		System.out.println("after tree annotateImplicit:" + tree + ", " + type);
 	}
 	
+    protected void annotateInheritedFromClass(/*@Mutable*/ AnnotatedTypeMirror type) {
+    	GlacierInheritedFromClassAnnotator.INSTANCE.visit(type, this);
+    }
+    
+    /**
+     * Callback to determine what to do with the annotations from a class declaration.
+     * 
+     * Ugh. This should not be here, but is due to visibility limitations.
+     */
+    protected void annotateInheritedFromClass(/*@Mutable*/ AnnotatedTypeMirror type,
+            Set<AnnotationMirror> fromClass) {
+        type.addMissingAnnotations(fromClass);
+    }
+    
+    /**
+     * A singleton utility class for pulling annotations down from a class
+     * type.
+     *
+     * HACK HACK HACK: It would be preferable to inherit from InheritedFromClassAnnotator, but that class has a private constructor.
+     *
+     * @see #annotateInheritedFromClass
+     */
+    protected static class GlacierInheritedFromClassAnnotator
+            extends AnnotatedTypeScanner<Void, GlacierAnnotatedTypeFactory> {
+
+        /** The singleton instance. */
+        public static final GlacierInheritedFromClassAnnotator INSTANCE
+            = new GlacierInheritedFromClassAnnotator();
+
+        
+        private GlacierInheritedFromClassAnnotator() {}
+
+        @Override
+        public Void visitExecutable(AnnotatedExecutableType type, GlacierAnnotatedTypeFactory p) {
+
+        	// KEY DIFFERENCE VS. SUPERCLASS: Visit the receiver too!
+        	scanAndReduce(type.getReceiverType(), p, null);
+
+            // Also skip constructor return types (which somewhat act like
+            // the receiver).
+            MethodSymbol methodElt = (MethodSymbol)type.getElement();
+            if (methodElt == null || !methodElt.isConstructor()) {
+                scan(type.getReturnType(), p);
+            }
+
+            scanAndReduce(type.getParameterTypes(), p, null);
+            scanAndReduce(type.getThrownTypes(), p, null);
+            scanAndReduce(type.getTypeVariables(), p, null);
+            return null;
+        }
+
+        @Override
+        public Void visitDeclared(AnnotatedDeclaredType type, GlacierAnnotatedTypeFactory p) {
+            Element classElt = type.getUnderlyingType().asElement();
+
+            // Only add annotations from the class declaration if there
+            // are no annotations from that hierarchy already on the type.
+
+            if (classElt != null) {
+                AnnotatedTypeMirror classType = p.fromElement(classElt);
+                assert classType != null : "Unexpected null type for class element: " + classElt;
+
+                p.annotateInheritedFromClass(type, classType.getAnnotations());
+            }
+
+            return super.visitDeclared(type, p);
+        }
+
+        private final Map<TypeParameterElement, AnnotatedTypeVariable> visited =
+                new HashMap<TypeParameterElement, AnnotatedTypeVariable>();
+
+        @Override
+        public Void visitTypeVariable(AnnotatedTypeVariable type, GlacierAnnotatedTypeFactory p) {
+            TypeParameterElement tpelt = (TypeParameterElement) type.getUnderlyingType().asElement();
+            if (!visited.containsKey(tpelt)) {
+                visited.put(tpelt, type);
+                if (type.getAnnotations().isEmpty() &&
+                        type.getUpperBound().getAnnotations().isEmpty() &&
+                        tpelt.getEnclosingElement().getKind() != ElementKind.TYPE_PARAMETER) {
+                    ElementAnnotationApplier.apply(type, tpelt, p);
+                }
+                super.visitTypeVariable(type, p);
+                visited.remove(tpelt);
+            }
+            return null;
+        }
+
+        @Override
+        public void reset() {
+            visited.clear();
+            super.reset();
+        }
+    }
+
 
 }

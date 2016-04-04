@@ -1,13 +1,16 @@
 package edu.cmu.cs.glacier;
 
 import java.util.List;
+import java.util.Set;
 
+import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.type.PrimitiveType;
 import javax.lang.model.type.TypeMirror;
 
 import org.checkerframework.framework.source.SourceChecker;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
@@ -25,7 +28,9 @@ import com.sun.source.tree.Tree.Kind;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.TreeInfo;
 
+import edu.cmu.cs.glacier.qual.GlacierBottom;
 import edu.cmu.cs.glacier.qual.Immutable;
+import edu.cmu.cs.glacier.qual.Mutable;
 
 public class GlacierVisitor extends BaseTypeVisitor<GlacierAnnotatedTypeFactory> {
     /** The {@link SourceChecker} for error reporting. */
@@ -139,6 +144,13 @@ public class GlacierVisitor extends BaseTypeVisitor<GlacierAnnotatedTypeFactory>
     }
     
     
+    protected Set<? extends AnnotationMirror> getExceptionParameterLowerBoundAnnotations() {
+    	java.util.HashSet<AnnotationMirror> h = new java.util.HashSet<> (2);
+    	
+    	h.add(AnnotationUtils.fromClass(elements, GlacierBottom.class));
+    	
+        return h;
+    }
     
 
     
