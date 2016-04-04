@@ -152,6 +152,10 @@ public class GlacierVisitor extends BaseTypeVisitor<GlacierAnnotatedTypeFactory>
         return h;
     }
     
+    protected Set<? extends AnnotationMirror> getThrowUpperBoundAnnotations() {
+        return atypeFactory.getQualifierHierarchy().getTopAnnotations();
+    }
+    
 
     
 }
