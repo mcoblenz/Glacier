@@ -1,5 +1,6 @@
 package edu.cmu.cs.glacier;
 
+import java.lang.reflect.AnnotatedType;
 import java.lang.reflect.AnnotatedArrayType;
 import java.util.ArrayList;
 import java.util.List;
@@ -7,6 +8,7 @@ import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.PrimitiveType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 
@@ -16,6 +18,8 @@ import org.checkerframework.framework.source.Result;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
+
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.TreeUtils;
 
@@ -26,7 +30,6 @@ import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
-import com.sun.tools.javac.code.Type.AnnotatedType;
 import com.sun.tools.javac.code.Type.ArrayType;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.TreeInfo;
@@ -116,6 +119,12 @@ public class GlacierAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         return selfType;
     }
 	
+	
+	private boolean isWhitelistedImmutableClass(Element element) {
+		// TODO
+		return false;
+	}
+		
 	// TODO: Forbid @Immutable and @Mutable annotations on this-parameters of methods.
 
 	/*
@@ -150,6 +159,20 @@ public class GlacierAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
 	}
 	
+	private boolean isAutoboxedImmutableClass(AnnotatedTypeMirror type) {
+		// Surely there is a better API for doing this than having to try/catch.
+		try {
+			types.unboxedType(type.getUnderlyingType());
+			System.out.println("found autoboxed immutable class: " + type);
+			return true;
+		}
+		catch (IllegalArgumentException e) {
+			System.out.println("not an autoboxed immutable class: " + type);
+
+			return false;
+		}
+	}
+	
 	// Modifies the input type.
 	private void inferAnnotationsForType(Tree tree, AnnotatedTypeMirror type) {
 		switch(type.getUnderlyingType().getKind()) {
@@ -175,7 +198,7 @@ public class GlacierAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 			break;
 		case DECLARED:
 			DeclaredType declaredType = (DeclaredType)type.getUnderlyingType();
-			//System.out.println("declared type: " + declaredType);
+			System.out.println("declared type: " + declaredType);
 			
 			if (tree.getKind() == Tree.Kind.CLASS && !type.hasAnnotation(Immutable.class)) {
 				// Classes are mutable by default.
@@ -187,7 +210,12 @@ public class GlacierAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 				//System.out.println("annotating declared type: " + declaredType + " on tree " + tree);
 				// Look up the original declaration of this class and find out its annotation.
 				Element classElt = declaredType.asElement();
-				if (classElt != null) {
+				
+				if (isAutoboxedImmutableClass(type)) {
+                	type.addAnnotation(IMMUTABLE);
+                	type.removeAnnotation(MUTABLE);
+				}
+				else if (classElt != null) {
 	                AnnotatedTypeMirror classType = fromElement(classElt);
 	                assert classType != null : "Unexpected null type for class element: " + classElt;
 
@@ -195,6 +223,7 @@ public class GlacierAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 	                	type.addAnnotation(IMMUTABLE);
 	                }
 	                else {
+	                	System.out.println("annotating type mutable: " + type);
 	                	type.addAnnotation(MUTABLE);
 	                }
 				}
@@ -213,6 +242,7 @@ public class GlacierAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 			type.addAnnotation(IMMUTABLE);
 			break;
 		case ERROR:
+			assert(false);
 			// Nothing to do here.
 			break;
 		case EXECUTABLE:
@@ -230,7 +260,7 @@ public class GlacierAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 				AnnotationMirror treeAnnotation = declaredGlacierAnnotation(tree);
 				
 				//System.out.println("class was declared immutable: " + classIsImmutable);
-				if (treeAnnotation != null && treeAnnotation.getAnnotationType().getAnnotation(Immutable.class) != null) {
+				if (treeAnnotation != null && treeAnnotation.equals(IMMUTABLE)) {
 					if (methodMutableAnnotation != null) {
 						// Can't have a mutable constructor in an immutable class.
 						checker.report(Result.failure("Can't have mutable constructor on immutable class"), tree);
@@ -251,11 +281,18 @@ public class GlacierAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 			}
 			
 			// Infer annotations on parameters.
+			//System.out.println("inferring annotation on parameters of method of type " + methodType);
 			List<AnnotatedTypeMirror> parameterTypes = methodType.getParameterTypes();
 			for (int i = 0; i < parameterTypes.size(); i++) {
 				AnnotatedTypeMirror parameterType = parameterTypes.get(i);
 				VariableTree parameter = methodParameters.get(i);
 				inferAnnotationsForType(parameter, parameterType);
+			}
+			
+			// Infer annotations on "this".
+			AnnotatedDeclaredType receiverType = methodType.getReceiverType();
+			if (receiverType != null) {
+				inferAnnotationsForType(tree, receiverType);
 			}
 
 			break;
@@ -266,50 +303,78 @@ public class GlacierAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 			type.addAnnotation(IMMUTABLE);
 			break;
 		case INTERSECTION:
+			assert(false);
 			// TODO
 			break;
 		case LONG:
 			type.addAnnotation(IMMUTABLE);
 			break;
 		case NONE:
+			assert(false);
 			// Shouldn't happen?
 			break;
 		case NULL:
 			type.addAnnotation(GlacierBottom.class);
 			break;
 		case OTHER:
+			assert(false);
 			// Shouldn't happen.
 			break;
 		case PACKAGE:
+			assert(false);
 			// Shouldn't happen.
 			break;
 		case SHORT:
 			type.addAnnotation(IMMUTABLE);
 			break;
 		case TYPEVAR:
+			assert(false);
 			// TODO
 			break;
 		case UNION:
+			assert(false);
 			// TODO
 			break;
 		case VOID:
-			// Nothing to do.
+			// Void values are always immutable, since there's nothing to change. We have to pick SOMETHING since all types must be annotated.
+			type.addAnnotation(IMMUTABLE);
 			break;
 		case WILDCARD:
-			// TODO
+			AnnotatedWildcardType wildcardType = (AnnotatedWildcardType)type;
+			// For now, if any bound is immutable, the whole thing has to be immutable.
+			boolean foundImmutableBound = false;
+			if (wildcardType.getExtendsBound().getAnnotation(Immutable.class) != null) {
+				foundImmutableBound = true;
+			}
+			
+			if (wildcardType.getSuperBound().getAnnotation(Immutable.class) != null) {
+				foundImmutableBound = true;
+			}
+			
+			
+			if (foundImmutableBound) {
+				type.addAnnotation(IMMUTABLE);
+				type.removeAnnotation(MUTABLE);
+			}
+			else {
+				type.addAnnotation(MUTABLE);
+				type.removeAnnotation(IMMUTABLE);
+			}
+			
 			break;
 		default:
+			assert(false);
 			break;
 		}
 	}
 	
 	@Override
 	public void annotateImplicit(Tree tree, @Mutable AnnotatedTypeMirror type, boolean iUseFlow) {
-		//System.out.println("tree annotateImplicit:" + tree + ", " + type);
+		System.out.println("tree annotateImplicit:" + tree + ", " + type);
 		
 		inferAnnotationsForType(tree, type);
 		
-		//System.out.println("after tree annotateImplicit:" + tree + ", " + type);
+		System.out.println("after tree annotateImplicit:" + tree + ", " + type);
 	}
 	
 

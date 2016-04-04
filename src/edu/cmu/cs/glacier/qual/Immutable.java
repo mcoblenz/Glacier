@@ -13,5 +13,14 @@ import java.lang.annotation.ElementType;
 @ImplicitFor(types = {  TypeKind.BOOLEAN, TypeKind.BYTE,
 						TypeKind.CHAR, TypeKind.DOUBLE,
         				TypeKind.FLOAT, TypeKind.INT,
-        				TypeKind.LONG, TypeKind.SHORT })
+        				TypeKind.LONG, TypeKind.SHORT },
+typeNames = { java.lang.Boolean.class,
+			  java.lang.Byte.class,
+			  java.lang.Short.class,
+			  java.lang.Character.class,
+			  java.lang.Integer.class,
+			  java.lang.Long.class,
+			  java.lang.Float.class,
+			  java.lang.Double.class }
+		)
 public @interface Immutable { }
