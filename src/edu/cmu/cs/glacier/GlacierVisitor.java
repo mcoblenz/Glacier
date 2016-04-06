@@ -5,11 +5,16 @@ import java.util.Set;
 
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.PrimitiveType;
+import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 
 import org.checkerframework.framework.source.SourceChecker;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.common.basetype.BaseTypeChecker;
@@ -21,9 +26,11 @@ import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MemberSelectTree;
+import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.ModifiersTree;
 import com.sun.source.tree.Tree;
+import com.sun.source.tree.TypeCastTree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.TreeInfo;
@@ -156,6 +163,35 @@ public class GlacierVisitor extends BaseTypeVisitor<GlacierAnnotatedTypeFactory>
         return atypeFactory.getQualifierHierarchy().getTopAnnotations();
     }
     
-
     
+    protected void commonAssignmentCheck(AnnotatedTypeMirror varType,
+            AnnotatedTypeMirror valueType, Tree valueTree, /*@CompilerMessageKey*/ 
+    String errorKey,
+            boolean isLocalVariableAssignment) {
+    	// It's okay to assign from an immutable class to an variable of type Object,
+    	// even if the variable is mutable.
+    	
+    	if ((types.directSupertypes(varType.getUnderlyingType())).size() == 0) {
+    		// We're assigning to something of type Object, so its annotations don't matter.
+    		// No other checks to do.
+    	}
+    	else {
+    		super.commonAssignmentCheck(varType, valueType, valueTree, errorKey, isLocalVariableAssignment);
+    	}
+    	
+    }
+
+    /*
+    protected boolean skipReceiverSubtypeCheck(MethodInvocationTree node,
+            AnnotatedTypeMirror methodDefinitionReceiver,
+            AnnotatedTypeMirror methodCallReceiver) {
+    	// If the method takes Object, it can take an @Immutable object too.
+    	return ((types.directSupertypes(methodDefinitionReceiver.getUnderlyingType())).size() == 0);
+
+    }*/
+
+    @Override
+    protected void checkTypecastSafety(TypeCastTree node, Void p) {
+    	// For now, do nothing. There's nothing to check that isn't already expressed by Java's type system.
+    }
 }

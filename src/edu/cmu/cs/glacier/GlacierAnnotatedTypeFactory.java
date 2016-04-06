@@ -22,7 +22,9 @@ import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.source.Result;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.framework.type.DefaultTypeHierarchy;
 import org.checkerframework.framework.type.ElementAnnotationApplier;
+import org.checkerframework.framework.type.TypeHierarchy;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
@@ -302,7 +304,7 @@ public class GlacierAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 			AnnotatedDeclaredType receiverType = methodType.getReceiverType();
 			if (receiverType != null) {
 				inferAnnotationsForType(tree, receiverType);
-//				System.out.println("Inferred receiver type: " + receiverType);
+				//System.out.println("Inferred receiver type: " + receiverType);
 			}
 
 			break;
@@ -380,11 +382,11 @@ public class GlacierAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 	
 	@Override
 	public void annotateImplicit(Tree tree, @Mutable AnnotatedTypeMirror type, boolean iUseFlow) {
-//		System.out.println("tree annotateImplicit:" + tree + ", " + type);
+		//System.out.println("tree annotateImplicit:" + tree + ", " + type);
 		
 		inferAnnotationsForType(tree, type);
 		
-//		System.out.println("after tree annotateImplicit:" + tree + ", " + type);
+		//System.out.println("after tree annotateImplicit:" + tree + ", " + type);
 	}
 	
     protected void annotateInheritedFromClass(/*@Mutable*/ AnnotatedTypeMirror type) {
@@ -399,6 +401,14 @@ public class GlacierAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     protected void annotateInheritedFromClass(/*@Mutable*/ AnnotatedTypeMirror type,
             Set<AnnotationMirror> fromClass) {
         type.addMissingAnnotations(fromClass);
+    }
+    
+
+    @Override
+    protected TypeHierarchy createTypeHierarchy() {
+        return new DefaultTypeHierarchy(checker, getQualifierHierarchy(),
+                                        checker.hasOption("ignoreRawTypeArguments"),
+                                        checker.hasOption("invariantArrays"));
     }
     
     /**
@@ -446,10 +456,25 @@ public class GlacierAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             // are no annotations from that hierarchy already on the type.
 
             if (classElt != null) {
-                AnnotatedTypeMirror classType = p.fromElement(classElt);
-                assert classType != null : "Unexpected null type for class element: " + classElt;
-
-                p.annotateInheritedFromClass(type, classType.getAnnotations());
+            	boolean isUnboxable = false;
+            	try {
+        			p.types.unboxedType(type.getUnderlyingType());
+        			isUnboxable = true;
+        		}
+        		catch (IllegalArgumentException e) {
+        			isUnboxable = false;
+        		}
+            	
+                
+            	// This might be a builtin type that will be auto-unboxed. In that case, it is immutable.
+                if (isUnboxable) {
+                	type.addAnnotation(Immutable.class);
+                }
+                else {
+                	AnnotatedTypeMirror classType = p.fromElement(classElt);
+                	assert classType != null : "Unexpected null type for class element: " + classElt;
+                	p.annotateInheritedFromClass(type, classType.getAnnotations());
+                }
             }
 
             return super.visitDeclared(type, p);
