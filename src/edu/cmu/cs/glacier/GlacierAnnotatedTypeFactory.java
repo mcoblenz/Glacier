@@ -205,12 +205,15 @@ public class GlacierAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 			inferAnnotationsForType(tree, annotatedComponentType);
 			break;
 		case BOOLEAN:
+			assert(!type.hasAnnotation(MUTABLE));
 			type.addAnnotation(IMMUTABLE);
 			break;
 		case BYTE:
+			assert(!type.hasAnnotation(MUTABLE));
 			type.addAnnotation(IMMUTABLE);
 			break;
 		case CHAR:
+			assert(!type.hasAnnotation(MUTABLE));
 			type.addAnnotation(IMMUTABLE);
 			break;
 		case DECLARED:
@@ -219,7 +222,7 @@ public class GlacierAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 			
 //			System.out.println("declared type: " + declaredType);
 			
-			if (tree.getKind() == Tree.Kind.CLASS && !type.hasAnnotation(Immutable.class)) {
+			if (tree.getKind() == Tree.Kind.CLASS && !type.hasAnnotation(IMMUTABLE)) {
 				// Classes are mutable by default.
 				type.addAnnotation(MUTABLE);
 				
@@ -234,7 +237,7 @@ public class GlacierAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 	type.addAnnotation(IMMUTABLE);
                 	
                 	if (type.hasAnnotation(MUTABLE)) {
-                		checker.report(Result.failure("Can't have mutable constructor on immutable class"), tree);
+                		checker.report(Result.failure("Can't have mutable annotation on autoboxed immutable class"), tree);
                 	}
 				}
 				else if (classElt != null) {
@@ -243,10 +246,17 @@ public class GlacierAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
 	                if (classType.hasAnnotation(IMMUTABLE)) {
 	                	type.addAnnotation(IMMUTABLE);
+	                	if (type.hasAnnotation(MUTABLE)) {
+	                		checker.report(Result.failure("Can't have mutable annotation on immutable class"), tree);
+	                	}
 	                }
 	                else {
 //	                	System.out.println("annotating type mutable: " + type);
 	                	type.addAnnotation(MUTABLE);
+	                	if (type.hasAnnotation(IMMUTABLE)) {
+	                		checker.report(Result.failure("Can't have immutable annotation on mutable class"), tree);
+	                	}
+
 	                }
 				}
 				else {
@@ -257,22 +267,15 @@ public class GlacierAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 			AnnotatedDeclaredType annotatedDeclaredType = (AnnotatedDeclaredType)type;
 			List<? extends AnnotatedTypeMirror> typeArguments = annotatedDeclaredType.getTypeArguments();
 			for (AnnotatedTypeMirror typeArg : typeArguments) {
-				Element classElt = declaredType.asElement();
-                AnnotatedTypeMirror classType = fromElement(classElt);
-                assert classType != null : "Unexpected null type for class element: " + classElt;
-
-                if (classType.hasAnnotation(IMMUTABLE)) {
-                	typeArg.addAnnotation(IMMUTABLE);
-                }
-                else {
-                	typeArg.addAnnotation(MUTABLE);
-                }
+				annotateInheritedFromClass(typeArg);
+				assert(typeArg.hasAnnotation(IMMUTABLE) || typeArg.hasAnnotation(MUTABLE));
 //				System.out.println("inferred annotation for type argument: " + typeArg);
 
 			}
 //			System.out.println("Final type for declaration: " + annotatedDeclaredType);
 			break;
 		case DOUBLE:
+        	assert(!type.hasAnnotation(MUTABLE));
 			type.addAnnotation(IMMUTABLE);
 			break;
 		case ERROR:
@@ -301,12 +304,14 @@ public class GlacierAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 						checker.report(Result.failure("Can't have mutable constructor on immutable class"), tree);
 					}
 					else {
+			        	assert(!returnType.hasAnnotation(MUTABLE));
 						returnType.addAnnotation(IMMUTABLE);
 						//System.out.println("after adding annotation, methodType is: " + methodType);
 						//System.out.println("after adding annotation, type is: " + type);
 					}
 				}
 				else {
+		        	assert(!returnType.hasAnnotation(IMMUTABLE));
 					returnType.addAnnotation(MUTABLE);
 				}
 				
@@ -340,9 +345,11 @@ public class GlacierAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
 			break;
 		case FLOAT:
+        	assert(!type.hasAnnotation(MUTABLE));
 			type.addAnnotation(IMMUTABLE);
 			break;
 		case INT:
+        	assert(!type.hasAnnotation(MUTABLE));
 			type.addAnnotation(IMMUTABLE);
 			break;
 		case INTERSECTION:
@@ -350,6 +357,7 @@ public class GlacierAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 			// TODO
 			break;
 		case LONG:
+        	assert(!type.hasAnnotation(MUTABLE));
 			type.addAnnotation(IMMUTABLE);
 			break;
 		case NONE:
@@ -357,6 +365,8 @@ public class GlacierAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 			// Shouldn't happen?
 			break;
 		case NULL:
+        	assert(!type.hasAnnotation(MUTABLE));
+        	assert(!type.hasAnnotation(IMMUTABLE));
 			type.addAnnotation(GlacierBottom.class);
 			break;
 		case OTHER:
@@ -368,6 +378,7 @@ public class GlacierAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 			// Shouldn't happen.
 			break;
 		case SHORT:
+        	assert(!type.hasAnnotation(MUTABLE));
 			type.addAnnotation(IMMUTABLE);
 			break;
 		case TYPEVAR:
@@ -437,11 +448,11 @@ public class GlacierAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 	
 	@Override
 	public void annotateImplicit(Tree tree, @Mutable AnnotatedTypeMirror type, boolean iUseFlow) {
-		//System.out.println("tree annotateImplicit:" + tree + ", " + type);
+//		System.out.println("tree annotateImplicit:" + tree + ", " + type);
 		
 		inferAnnotationsForType(tree, type);
 		
-		//System.out.println("after tree annotateImplicit:" + tree + ", " + type);
+//		System.out.println("after tree annotateImplicit:" + tree + ", " + type);
 	}
 	
     protected void annotateInheritedFromClass(/*@Mutable*/ AnnotatedTypeMirror type) {
@@ -528,12 +539,19 @@ public class GlacierAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 else {
                 	AnnotatedTypeMirror classType = p.fromElement(classElt);
                 	assert classType != null : "Unexpected null type for class element: " + classElt;
-                	p.annotateInheritedFromClass(type, classType.getAnnotations());
+                	// If the class type has no annotations, infer @Mutable.
+                	if (!classType.hasAnnotation(Immutable.class)) {
+                		type.addAnnotation(Mutable.class);
+                	}
+                	else {
+                		p.annotateInheritedFromClass(type, classType.getAnnotations());
+                	}
                 }
             }
 
             return super.visitDeclared(type, p);
         }
+        
 
         private final Map<TypeParameterElement, AnnotatedTypeVariable> visited =
                 new HashMap<TypeParameterElement, AnnotatedTypeVariable>();
