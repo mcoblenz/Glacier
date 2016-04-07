@@ -119,12 +119,18 @@ public class GlacierAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         AnnotatedDeclaredType enclosingClassType = getAnnotatedType(enclosingClass);
 
         if (enclosingClassType.hasAnnotation(IMMUTABLE)) {
-        	selfType.removeAnnotation(MUTABLE);
+			if (selfType.hasAnnotation(MUTABLE)) {
+        		checker.report(Result.failure("Can't have mutable this because the class was declared immutable"), tree);
+        	}
         	selfType.addAnnotation(IMMUTABLE);
         }
         else {
         	selfType.addAnnotation(MUTABLE);
-        	selfType.removeAnnotation(IMMUTABLE);
+        	
+			if (selfType.hasAnnotation(IMMUTABLE)) {
+        		checker.report(Result.failure("Can't have immutable this because the class was declared mutable"), tree);
+        	}
+
         }
         
         return selfType;
@@ -209,22 +215,27 @@ public class GlacierAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 			break;
 		case DECLARED:
 			DeclaredType declaredType = (DeclaredType)type.getUnderlyingType();
+			
+			
 //			System.out.println("declared type: " + declaredType);
 			
 			if (tree.getKind() == Tree.Kind.CLASS && !type.hasAnnotation(Immutable.class)) {
 				// Classes are mutable by default.
 				type.addAnnotation(MUTABLE);
 				
-				//System.out.println("annotating tree " + tree + ": " + type + " mutable because classes are mutable by default.");
+//				System.out.println("annotating tree " + tree + ": " + type + " mutable because classes are mutable by default.");
 			}
 			else {
-				//System.out.println("annotating declared type: " + declaredType + " on tree " + tree);
+//				System.out.println("annotating declared type: " + declaredType + " on tree " + tree);
 				// Look up the original declaration of this class and find out its annotation.
 				Element classElt = declaredType.asElement();
 				
 				if (isAutoboxedImmutableClass(type)) {
                 	type.addAnnotation(IMMUTABLE);
-                	type.removeAnnotation(MUTABLE);
+                	
+                	if (type.hasAnnotation(MUTABLE)) {
+                		checker.report(Result.failure("Can't have mutable constructor on immutable class"), tree);
+                	}
 				}
 				else if (classElt != null) {
 	                AnnotatedTypeMirror classType = fromElement(classElt);
@@ -246,8 +257,20 @@ public class GlacierAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 			AnnotatedDeclaredType annotatedDeclaredType = (AnnotatedDeclaredType)type;
 			List<? extends AnnotatedTypeMirror> typeArguments = annotatedDeclaredType.getTypeArguments();
 			for (AnnotatedTypeMirror typeArg : typeArguments) {
-				inferAnnotationsForType(tree, typeArg);
+				Element classElt = declaredType.asElement();
+                AnnotatedTypeMirror classType = fromElement(classElt);
+                assert classType != null : "Unexpected null type for class element: " + classElt;
+
+                if (classType.hasAnnotation(IMMUTABLE)) {
+                	typeArg.addAnnotation(IMMUTABLE);
+                }
+                else {
+                	typeArg.addAnnotation(MUTABLE);
+                }
+//				System.out.println("inferred annotation for type argument: " + typeArg);
+
 			}
+//			System.out.println("Final type for declaration: " + annotatedDeclaredType);
 			break;
 		case DOUBLE:
 			type.addAnnotation(IMMUTABLE);
@@ -268,6 +291,7 @@ public class GlacierAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 				AnnotationMirror methodMutableAnnotation = returnType.getAnnotation(Mutable.class);
 				//System.out.println("methodImmutableAnnotation: " + methodImmutableAnnotation);
 				
+				
 				AnnotationMirror treeAnnotation = declaredGlacierAnnotation(tree);
 				
 				//System.out.println("class was declared immutable: " + classIsImmutable);
@@ -280,12 +304,19 @@ public class GlacierAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 						returnType.addAnnotation(IMMUTABLE);
 						//System.out.println("after adding annotation, methodType is: " + methodType);
 						//System.out.println("after adding annotation, type is: " + type);
-
 					}
 				}
 				else {
 					returnType.addAnnotation(MUTABLE);
 				}
+				
+				
+				// The return type might have parameters.
+				inferAnnotationsForType(methodTree, returnType);
+				
+				
+				
+//				System.out.println("Inferred return type for constructor: " + methodType.getReturnType());
 			}
 			else {
 				inferAnnotationsForType(methodTree, methodType.getReturnType());
@@ -340,8 +371,26 @@ public class GlacierAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 			type.addAnnotation(IMMUTABLE);
 			break;
 		case TYPEVAR:
-			assert(false);
-			// TODO
+			// Type variables have the same annotations as their containing classes.
+//			if (tree.getKind() == Tree.Kind.CLASS) {
+//				ClassTree classTree = (ClassTree)tree;
+//				
+//			}
+//			System.out.println("Annotating type variable in tree " + tree + ": " + type);
+
+			AnnotatedTypeVariable typeVar = (AnnotatedTypeVariable)type;
+			AnnotatedTypeMirror upperBound = typeVar.getUpperBound();
+			if (upperBound != null) {
+				inferAnnotationsForType(tree, upperBound);
+//				System.out.println("Upper bound inferred to be: " + upperBound);
+			}
+			
+			AnnotatedTypeMirror lowerBound = typeVar.getLowerBound();
+			if (lowerBound != null) {
+				inferAnnotationsForType(tree, lowerBound);
+			}
+//			System.out.println("Annotated type variable in tree " + tree + ": " + type);
+
 			break;
 		case UNION:
 			assert(false);
@@ -366,11 +415,17 @@ public class GlacierAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 			
 			if (foundImmutableBound) {
 				type.addAnnotation(IMMUTABLE);
-				type.removeAnnotation(MUTABLE);
+				
+				if (type.hasAnnotation(MUTABLE)) {
+            		checker.report(Result.failure("Can't have mutable annotation with an immutable bound"), tree);
+            	}
 			}
 			else {
 				type.addAnnotation(MUTABLE);
-				type.removeAnnotation(IMMUTABLE);
+				
+				if (type.hasAnnotation(IMMUTABLE)) {
+            		checker.report(Result.failure("Can't have immutable annotation here with a mutable bound"), tree);
+            	}
 			}
 			
 			break;
