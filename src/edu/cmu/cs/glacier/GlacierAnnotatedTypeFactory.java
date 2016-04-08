@@ -1,7 +1,5 @@
 package edu.cmu.cs.glacier;
 
-import java.lang.reflect.AnnotatedType;
-import java.lang.reflect.AnnotatedArrayType;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -16,6 +14,7 @@ import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.PrimitiveType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import javax.lang.model.util.Types;
 
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
@@ -25,9 +24,15 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.DefaultTypeHierarchy;
 import org.checkerframework.framework.type.ElementAnnotationApplier;
 import org.checkerframework.framework.type.TypeHierarchy;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedIntersectionType;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedNoType;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedNullType;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedPrimitiveType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedUnionType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
 import org.checkerframework.framework.type.visitor.AnnotatedTypeScanner;
 import org.checkerframework.javacutil.AnnotationUtils;
@@ -137,9 +142,26 @@ public class GlacierAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 	
 	
-	private boolean isWhitelistedImmutableClass(Element element) {
-		// TODO
+	private static boolean isWhitelistedImmutableClass(Element element) {
+		if (element.asType().toString().equals("java.lang.String")) {
+			return true;
+		}
+		// TODO: add more classes.
 		return false;
+	}
+	
+	private static boolean isAutoboxedImmutableClass(Types types, AnnotatedTypeMirror type) {
+		// Surely there is a better API for doing this than having to try/catch.
+		try {
+			types.unboxedType(type.getUnderlyingType());
+//			System.out.println("found autoboxed immutable class: " + type);
+			return true;
+		}
+		catch (IllegalArgumentException e) {
+//			System.out.println("not an autoboxed immutable class: " + type);
+
+			return false;
+		}
 	}
 		
 	// TODO: Forbid @Immutable and @Mutable annotations on this-parameters of methods.
@@ -176,19 +198,7 @@ public class GlacierAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
 	}
 	
-	private boolean isAutoboxedImmutableClass(AnnotatedTypeMirror type) {
-		// Surely there is a better API for doing this than having to try/catch.
-		try {
-			types.unboxedType(type.getUnderlyingType());
-//			System.out.println("found autoboxed immutable class: " + type);
-			return true;
-		}
-		catch (IllegalArgumentException e) {
-//			System.out.println("not an autoboxed immutable class: " + type);
 
-			return false;
-		}
-	}
 	
 	// Modifies the input type.
 	private void inferAnnotationsForType(Tree tree, AnnotatedTypeMirror type) {
@@ -233,7 +243,8 @@ public class GlacierAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 				// Look up the original declaration of this class and find out its annotation.
 				Element classElt = declaredType.asElement();
 				
-				if (isAutoboxedImmutableClass(type)) {
+				if (isAutoboxedImmutableClass(types, type) ||
+						isWhitelistedImmutableClass(classElt)) {
                 	type.addAnnotation(IMMUTABLE);
                 	
                 	if (type.hasAnnotation(MUTABLE)) {
@@ -268,7 +279,7 @@ public class GlacierAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 			List<? extends AnnotatedTypeMirror> typeArguments = annotatedDeclaredType.getTypeArguments();
 			for (AnnotatedTypeMirror typeArg : typeArguments) {
 				annotateInheritedFromClass(typeArg);
-				assert(typeArg.hasAnnotation(IMMUTABLE) || typeArg.hasAnnotation(MUTABLE));
+				assert((typeArg.getKind() == TypeKind.WILDCARD) || typeArg.hasAnnotation(IMMUTABLE) || typeArg.hasAnnotation(MUTABLE));
 //				System.out.println("inferred annotation for type argument: " + typeArg);
 
 			}
@@ -446,6 +457,7 @@ public class GlacierAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 		}
 	}
 	
+	/*
 	@Override
 	public void annotateImplicit(Tree tree, @Mutable AnnotatedTypeMirror type, boolean iUseFlow) {
 //		System.out.println("tree annotateImplicit:" + tree + ", " + type);
@@ -454,6 +466,7 @@ public class GlacierAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 		
 //		System.out.println("after tree annotateImplicit:" + tree + ", " + type);
 	}
+	*/
 	
     protected void annotateInheritedFromClass(/*@Mutable*/ AnnotatedTypeMirror type) {
     	GlacierInheritedFromClassAnnotator.INSTANCE.visit(type, this);
@@ -472,7 +485,7 @@ public class GlacierAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     @Override
     protected TypeHierarchy createTypeHierarchy() {
-        return new DefaultTypeHierarchy(checker, getQualifierHierarchy(),
+        return new GlacierTypeHierarchy(checker, getQualifierHierarchy(),
                                         checker.hasOption("ignoreRawTypeArguments"),
                                         checker.hasOption("invariantArrays"));
     }
@@ -522,18 +535,10 @@ public class GlacierAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             // are no annotations from that hierarchy already on the type.
 
             if (classElt != null) {
-            	boolean isUnboxable = false;
-            	try {
-        			p.types.unboxedType(type.getUnderlyingType());
-        			isUnboxable = true;
-        		}
-        		catch (IllegalArgumentException e) {
-        			isUnboxable = false;
-        		}
+            	boolean isHardCodedImmutable = isAutoboxedImmutableClass(p.types, type) || 
+            			isWhitelistedImmutableClass(classElt);
             	
-                
-            	// This might be a builtin type that will be auto-unboxed. In that case, it is immutable.
-                if (isUnboxable) {
+            	if (isHardCodedImmutable) {
                 	type.addAnnotation(Immutable.class);
                 }
                 else {
@@ -577,6 +582,89 @@ public class GlacierAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             visited.clear();
             super.reset();
         }
+
+
+        @Override
+        public Void visitIntersection(AnnotatedIntersectionType type, GlacierAnnotatedTypeFactory p) {
+            if (visitedNodes.containsKey(type)) {
+                return visitedNodes.get(type);
+            }
+            visitedNodes.put(type, null);
+            Void r = scan(type.directSuperTypes(), p);
+            return r;
+        }
+
+        @Override
+        public Void visitUnion(AnnotatedUnionType type, GlacierAnnotatedTypeFactory p) {
+            if (visitedNodes.containsKey(type)) {
+                return visitedNodes.get(type);
+            }
+            visitedNodes.put(type, null);
+            Void r = scan(type.getAlternatives(), p);
+            return r;
+        }
+
+        @Override
+        public Void visitArray(AnnotatedArrayType type, GlacierAnnotatedTypeFactory p) {
+			// Arrays default to mutable.
+			if (!type.hasAnnotation(Immutable.class)) {
+				type.addAnnotation(Mutable.class);
+			}
+			        	
+        	Void r = scan(type.getComponentType(), p);
+            return r;
+        }
+
+        @Override
+        public Void visitNoType(AnnotatedNoType type, GlacierAnnotatedTypeFactory p) {
+            return null;
+        }
+
+        @Override
+        public Void visitNull(AnnotatedNullType type, GlacierAnnotatedTypeFactory p) {
+            return null;
+        }
+
+        @Override
+        public Void visitPrimitive(AnnotatedPrimitiveType type, GlacierAnnotatedTypeFactory p) {
+            return null;
+        }
+
+        @Override
+        public Void visitWildcard(AnnotatedWildcardType type, GlacierAnnotatedTypeFactory p) {
+            if (visitedNodes.containsKey(type)) {
+                return visitedNodes.get(type);
+            }
+            visitedNodes.put(type, null);
+            Void r = scan(type.getExtendsBound(), p);
+            visitedNodes.put(type, r);
+            r = scanAndReduce(type.getSuperBound(), p, r);
+            visitedNodes.put(type, r);
+            
+            
+			// For now, if any bound is immutable, the whole thing has to be immutable.
+			boolean foundImmutableBound = false;
+			if (type.getExtendsBound().getAnnotation(Immutable.class) != null) {
+				foundImmutableBound = true;
+			}
+			
+			if (type.getSuperBound().getAnnotation(Immutable.class) != null) {
+				foundImmutableBound = true;
+			}
+			
+			
+			if (foundImmutableBound) {
+				type.addAnnotation(Immutable.class);
+				assert(!type.hasAnnotation(Mutable.class));
+			}
+			else {
+				type.addAnnotation(Mutable.class);
+				assert(!type.hasAnnotation(Immutable.class));
+			}
+
+            return r;
+        }
+        
     }
 
 

@@ -40,7 +40,7 @@ public class GlacierTypeHierarchy extends DefaultTypeHierarchy {
     		// The subtype might be an immutable class that implements a mutable interface.
     		// If so, we'll return true even though immutable is not a subtype of mutable by itself.
     		if (subtype.hasAnnotation(Immutable.class) && supertype.hasAnnotation(Mutable.class)) {
-    			System.out.println("checking " + subtype.getUnderlyingType() + " <: " + supertype.getUnderlyingType());
+//    			System.out.println("checking " + subtype.getUnderlyingType() + " <: " + supertype.getUnderlyingType());
     			// Check to make sure the subtype implements the supertype's interface.
     			return types.isSubtype(subtype.getUnderlyingType(), supertype.getUnderlyingType());
     		}
