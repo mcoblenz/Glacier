@@ -228,6 +228,8 @@ public class GlacierAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         @Override
         public Void visitDeclared(AnnotatedDeclaredType type, GlacierAnnotatedTypeFactory p) {
             Element classElt = type.getUnderlyingType().asElement();
+//            assert(!type.hasAnnotation(GlacierBottom.class));
+            
 
             // Only add annotations from the class declaration if there
             // are no annotations from that hierarchy already on the type.
@@ -243,7 +245,7 @@ public class GlacierAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 	AnnotatedTypeMirror classType = p.fromElement(classElt);
                 	assert classType != null : "Unexpected null type for class element: " + classElt;
                 	// If the class type has no annotations, infer @Mutable.
-                	if (!classType.hasAnnotation(Immutable.class)) {
+                	if (!classType.hasAnnotation(Immutable.class) && !type.isAnnotatedInHierarchy(p.GLACIER_BOTTOM)) {
                 		type.addAnnotation(Mutable.class);
                 	}
                 	else {
@@ -251,7 +253,9 @@ public class GlacierAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 	}
                 }
             }
-
+//            assert(!type.hasAnnotation(GlacierBottom.class));
+            
+//            System.out.println("visitDeclared " + type);
             return super.visitDeclared(type, p);
         }
         
@@ -261,6 +265,8 @@ public class GlacierAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
         @Override
         public Void visitTypeVariable(AnnotatedTypeVariable type, GlacierAnnotatedTypeFactory p) {
+//            assert(!type.hasAnnotation(GlacierBottom.class));
+
             TypeParameterElement tpelt = (TypeParameterElement) type.getUnderlyingType().asElement();
             if (!visited.containsKey(tpelt)) {
                 visited.put(tpelt, type);
@@ -269,9 +275,13 @@ public class GlacierAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                         tpelt.getEnclosingElement().getKind() != ElementKind.TYPE_PARAMETER) {
                     ElementAnnotationApplier.apply(type, tpelt, p);
                 }
+                
                 super.visitTypeVariable(type, p);
+                
+                
                 visited.remove(tpelt);
             }
+//            assert(!type.hasAnnotation(GlacierBottom.class));
             return null;
         }
 

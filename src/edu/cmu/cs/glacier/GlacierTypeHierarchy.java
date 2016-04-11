@@ -1,8 +1,6 @@
 package edu.cmu.cs.glacier;
 
 import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.type.DeclaredType;
-import javax.lang.model.type.TypeKind;
 
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
@@ -18,7 +16,7 @@ public class GlacierTypeHierarchy extends DefaultTypeHierarchy {
 	
     public GlacierTypeHierarchy(final BaseTypeChecker checker, final QualifierHierarchy qualifierHierarchy,
             boolean ignoreRawTypes, boolean invariantArrayComponents) {
-    	super(checker, qualifierHierarchy, ignoreRawTypes, invariantArrayComponents);
+    	super(checker, qualifierHierarchy, ignoreRawTypes, invariantArrayComponents, true);
     }
     
     @Override
