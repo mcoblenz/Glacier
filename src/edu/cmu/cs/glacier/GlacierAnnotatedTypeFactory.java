@@ -212,12 +212,11 @@ public class GlacierAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         	// KEY DIFFERENCE VS. SUPERCLASS: Visit the receiver too!
         	scanAndReduce(type.getReceiverType(), p, null);
 
-            // Also skip constructor return types (which somewhat act like
+        	// ANOTHER KEY DIFFERENCE VS. SUPERCLASS: visit
+            // constructor return types (which somewhat act like
             // the receiver).
-            MethodSymbol methodElt = (MethodSymbol)type.getElement();
-            if (methodElt == null || !methodElt.isConstructor()) {
-                scan(type.getReturnType(), p);
-            }
+            scan(type.getReturnType(), p);
+            
 
             scanAndReduce(type.getParameterTypes(), p, null);
             scanAndReduce(type.getThrownTypes(), p, null);
