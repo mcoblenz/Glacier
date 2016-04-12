@@ -100,6 +100,14 @@ public class GlacierVisitor extends BaseTypeVisitor<GlacierAnnotatedTypeFactory>
 			}
 		}
 		
+		Tree superclass = node.getExtendsClause();
+		if (superclass != null) {
+			AnnotatedTypeMirror superclassType = atypeFactory.getAnnotatedType(superclass);
+			if (superclassType.hasAnnotation(Immutable.class) && !classIsImmutable) {
+				checker.report(Result.failure("glacier.subclass.mutable", node.getSimpleName(), superclass.toString()), node);
+			}
+		}
+
 		
 		// Check to make sure that if any implemented interface is immutable, the class is immutable.
 		List<? extends Tree> interfaces = node.getImplementsClause();
