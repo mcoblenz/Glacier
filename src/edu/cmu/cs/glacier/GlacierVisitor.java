@@ -14,8 +14,10 @@ import javax.lang.model.type.TypeMirror;
 import org.checkerframework.framework.source.SourceChecker;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
@@ -32,6 +34,7 @@ import com.sun.source.tree.ModifiersTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.TypeCastTree;
 import com.sun.source.tree.Tree.Kind;
+import com.sun.tools.javac.code.Symbol.MethodSymbol;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.TreeInfo;
 
@@ -149,9 +152,19 @@ public class GlacierVisitor extends BaseTypeVisitor<GlacierAnnotatedTypeFactory>
 				ownerType = visitorState.getClassType();
 			}
 
+			// Assignment to fields of immutable classes is allowed during their constructors and outside methods.
+			MethodTree methodTree = visitorState.getMethodTree();
+			if (methodTree != null) {
+				boolean methodIsConstructor = TreeUtils.isConstructor(methodTree);
 
-			if (ownerType.getAnnotation(Immutable.class) != null) {
-				checker.report(Result.failure("glacier.assignment"), node);
+				AnnotatedDeclaredType classType = visitorState.getClassType();
+
+				boolean classOwnsAssignedField = ownerType.getUnderlyingType().equals(classType.getUnderlyingType()); 
+
+
+				if ((!methodIsConstructor || !classOwnsAssignedField) && ownerType.getAnnotation(Immutable.class) != null) {
+					checker.report(Result.failure("glacier.assignment"), node);
+				}
 			}
 		}
 
