@@ -157,7 +157,22 @@ public class GlacierVisitor extends BaseTypeVisitor<GlacierAnnotatedTypeFactory>
 
     	return null;
     }
-    
+
+    /**
+     * Tests that the qualifiers present on the useType are valid qualifiers,
+     * given the qualifiers on the declaration of the type, declarationType.
+     * 
+     * For Glacier, we don't allow qualifiers on the useType that are not redundant.
+     */
+    @Override
+    public boolean isValidUse(AnnotatedDeclaredType declarationType,
+            AnnotatedDeclaredType useType, Tree tree) {
+    	
+    	AnnotationMirror immutableAnnotation = AnnotationUtils.fromClass(elements, Immutable.class);
+    	AnnotationMirror useAnnotation = useType.getAnnotationInHierarchy(immutableAnnotation);
+  
+    	return declarationType.hasAnnotation(useAnnotation);
+    }
     
     protected Set<? extends AnnotationMirror> getExceptionParameterLowerBoundAnnotations() {
     	java.util.HashSet<AnnotationMirror> h = new java.util.HashSet<> (2);
