@@ -15,7 +15,6 @@
   
   <property name="framework.loc" value="${checker-framework.loc}/framework"/>
   <property name="junit.lib" value="${framework.loc}/tests/junit-4.12.jar"/>
-
   
   <property name="hamcrest.lib" value="${framework.loc}/tests/hamcrest-core-1.3.jar"/>
 
@@ -82,7 +81,7 @@
     <!-- TODO -->
   </target>
   
-  <target name="build-tests" depends="prep" description="Compile tests">
+  <target name="build-tests" depends="prep,CreateJar" description="Compile tests">
     <echo message="tests = ${tests}"/>
     <pathconvert pathsep=" " property="src.tests">
       <path>
@@ -114,13 +113,15 @@
 
   <target name="glacier-tests" depends="build-tests">
     <antcall target="-run-tests">
-    <param name="param" value="tests.GlacierTest"/>
+    <param name="testclass" value="tests.GlacierTest$GlacierCheckerTests"/>
   </antcall>
   
   </target>
   
   <target name="-run-tests">
-    <echo message="Running tests: ${param}"/>
+      <echo message="junit: ${junit.lib}"/>
+
+    <echo message="Running tests: ${testclass}"/>
     <property name="emit.test.debug" value="true"/>
     <condition property="should.emit.debug.str" value="true" else="false">
       <isset property="emit.test.debug"/>
@@ -145,9 +146,9 @@
     <!-- end of non-debugging version. -->
 
     <!-- debugging version: -->
-    <junit fork="${run.tests.should.fork}"
+    <junit fork="true"
 	   dir="${basedir}"
-	   haltonfailure="${halt.on.test.failure}"
+	   haltonfailure="true"
 	   maxmemory="2500M"
 	   showoutput="true"
 	   printsummary="withOutAndErr"
@@ -166,15 +167,16 @@
       <jvmarg line="-ea"/>
 
       <classpath>
+
 	<pathelement path="${build}"/>
 	<pathelement path="${tests.build}"/>
 	<pathelement path="${javac.lib}"/>
-	<pathelement path="${junit.lib}"/>
 	<pathelement path="${hamcrest.lib}"/>
 	<pathelement path="${checker.lib}"/>
-      </classpath>
+    <pathelement path="${junit.lib}"/>
 
-      <test name="${param}" todir="${build.reports}"/>
+      </classpath>
+      <test name="${testclass}" todir="${build.reports}"/>
     </junit>
   </target>
   

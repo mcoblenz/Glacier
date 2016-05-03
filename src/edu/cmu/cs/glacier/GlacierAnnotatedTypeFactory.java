@@ -125,7 +125,7 @@ public class GlacierAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
         if (enclosingClassType.hasAnnotation(IMMUTABLE)) {
 			if (selfType.hasAnnotation(MUTABLE)) {
-        		checker.report(Result.failure("Can't have mutable this because the class was declared immutable"), tree);
+        		checker.report(Result.failure("glacier.conflict.mutable", enclosingClassType), tree);
         	}
         	selfType.addAnnotation(IMMUTABLE);
         }
@@ -133,7 +133,7 @@ public class GlacierAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         	selfType.addAnnotation(MUTABLE);
         	
 			if (selfType.hasAnnotation(IMMUTABLE)) {
-        		checker.report(Result.failure("Can't have immutable this because the class was declared mutable"), tree);
+        		checker.report(Result.failure("glacier.conflict.immutable", enclosingClassType), tree);
         	}
 
         }
