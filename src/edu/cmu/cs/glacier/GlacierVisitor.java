@@ -105,7 +105,7 @@ public class GlacierVisitor extends BaseTypeVisitor<GlacierAnnotatedTypeFactory>
 			List <? extends Tree> members = node.getMembers();
 			for (Tree t : members) {
 				if (t.getKind() == Kind.VARIABLE) {					
-		            AnnotatedTypeMirror variableType = atypeFactory.fromMember(t);
+		            AnnotatedTypeMirror variableType = atypeFactory.getAnnotatedType(t);
 					
 					boolean fieldIsImmutable = variableType.hasAnnotation(Immutable.class);
 					if (!fieldIsImmutable) {
@@ -229,8 +229,7 @@ public class GlacierVisitor extends BaseTypeVisitor<GlacierAnnotatedTypeFactory>
     
     protected void commonAssignmentCheck(AnnotatedTypeMirror varType,
             AnnotatedTypeMirror valueType, Tree valueTree, /*@CompilerMessageKey*/ 
-    String errorKey,
-            boolean isLocalVariableAssignment) {
+    String errorKey) {
     	// It's okay to assign from an immutable class to an variable of type Object,
     	// even if the variable is mutable.
     	
@@ -239,7 +238,7 @@ public class GlacierVisitor extends BaseTypeVisitor<GlacierAnnotatedTypeFactory>
     		// No other checks to do.
     	}
     	else {
-    		super.commonAssignmentCheck(varType, valueType, valueTree, errorKey, isLocalVariableAssignment);
+              super.commonAssignmentCheck(varType, valueType, valueTree, errorKey);
     	}
     	
     }

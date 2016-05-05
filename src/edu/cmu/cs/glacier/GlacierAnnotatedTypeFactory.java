@@ -102,7 +102,6 @@ public class GlacierAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 		MUTABLE = AnnotationUtils.fromClass(elements, Mutable.class);
 		IMMUTABLE = AnnotationUtils.fromClass(elements, Immutable.class);
 		GLACIER_BOTTOM = AnnotationUtils.fromClass(elements, GlacierBottom.class);
-		setUseFlow(false);
 		this.postInit();
 	}
 	
