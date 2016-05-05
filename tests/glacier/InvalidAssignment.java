@@ -1,6 +1,6 @@
 package edu.cmu.cs.glacier.tests;
 
-import java.util.Date;
+import java.util.Calendar;
 
 import edu.cmu.cs.glacier.qual.Immutable;
 
@@ -10,10 +10,9 @@ public @Immutable class InvalidAssignment {
 		public int i;
 	}
 	
-	//:: error: glacier.mutable.invalid
 	String s;
 	//:: error: glacier.mutable.invalid
-	Date d;
+	Calendar c;
 	//:: error: glacier.mutable.invalid
 	Inner i;
 	int x;
@@ -29,7 +28,7 @@ public @Immutable class InvalidAssignment {
 	}
 	
 	public void setMonth(int month) {
-		d.setMonth(month); // No error here; the problem is that d was mutable in the first place.
+		c.set(Calendar.MONTH, month); // No error here; the problem is that d was mutable in the first place.
 	}
 	
 	public void setInner(int i) {

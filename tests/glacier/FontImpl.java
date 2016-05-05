@@ -9,6 +9,7 @@ import edu.cmu.cs.glacier.qual.*;
 
 //::error: (glacier.subclass.mutable)
 class ColorImpl extends AbstractColorAdv {
+	// Arguably it would be preferable for this to not be an error.
 	//::error: (assignment.type.incompatible)
 	public static final AbstractColorAdv BLACK = new ColorImpl("#000000");
 	
@@ -20,6 +21,8 @@ class ColorImpl extends AbstractColorAdv {
 
 public class FontImpl {
 	FontImpl(String fontColor) {
+		// Arguably it would be preferable for this to not be an error.
+		//::error: (assignment.type.incompatible)
 		SColor a = new ColorImpl(fontColor);
 		SColor c = fontColor != null ? new ColorImpl(fontColor) : null;
 	}

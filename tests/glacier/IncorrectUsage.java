@@ -17,10 +17,11 @@ import edu.cmu.cs.glacier.qual.*;
 	}
 	
 	//::error: (type.invalid)
-	public void badMethod2(@Mutable IncorrectUsage2 obj) {
+	public void badMethod2(@Mutable IncorrectUsage obj) {
 		
 	}
 }
+
 
 class IncorrectUsage2 {
 	public void okMethod(IncorrectUsage2 this) {
@@ -41,3 +42,4 @@ class IncorrectUsage2 {
 		
 	}
 }
+

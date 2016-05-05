@@ -123,21 +123,14 @@ public class GlacierAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
         AnnotatedDeclaredType enclosingClassType = getAnnotatedType(enclosingClass);
 
-        if (enclosingClassType.hasAnnotation(IMMUTABLE)) {
-			if (selfType.hasAnnotation(MUTABLE)) {
-        		checker.report(Result.failure("glacier.conflict.mutable", enclosingClassType), tree);
+        if (!selfType.isAnnotatedInHierarchy(IMMUTABLE)) { // If there's already an annotation on selfType and it conflicts with Mutable, that error will be found by the type validity check elsewhere.
+        	if (enclosingClassType.hasAnnotation(IMMUTABLE)) {
+        		selfType.addAnnotation(IMMUTABLE);
         	}
-        	selfType.addAnnotation(IMMUTABLE);
-        }
-        else {
-        	selfType.addAnnotation(MUTABLE);
-        	
-			if (selfType.hasAnnotation(IMMUTABLE)) {
-        		checker.report(Result.failure("glacier.conflict.immutable", enclosingClassType), tree);
+        	else if (!selfType.isAnnotatedInHierarchy(IMMUTABLE)) { // If there's already an annotation on selfType and it conflicts with Mutable, that error will be found by the type validity check elsewhere.
+        		selfType.addAnnotation(MUTABLE);
         	}
-
         }
-        
         return selfType;
     }
 	

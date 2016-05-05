@@ -32,6 +32,7 @@ import org.checkerframework.javacutil.InternalUtils;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.common.basetype.BaseTypeChecker;
+import org.checkerframework.common.basetype.BaseTypeValidator;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.dataflow.analysis.FlowExpressions;
 import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
@@ -60,15 +61,15 @@ import edu.cmu.cs.glacier.qual.Immutable;
 import edu.cmu.cs.glacier.qual.Mutable;
 
 public class GlacierVisitor extends BaseTypeVisitor<GlacierAnnotatedTypeFactory> {
-    /** The {@link SourceChecker} for error reporting. */
-    protected final SourceChecker checker;
-    
 
 	public GlacierVisitor(BaseTypeChecker checker) {
 		super(checker);
-
-		this.checker = checker;
 	}
+	
+    @Override
+    protected BaseTypeValidator createTypeValidator() {
+        return new GlacierTypeValidator(checker, this, atypeFactory);
+    }
 	
 	private static boolean modifiersIncludeImmutable(ModifiersTree modifiers) {
 		boolean foundImmutable = false;
