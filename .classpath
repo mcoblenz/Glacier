@@ -2,8 +2,7 @@
 <classpath>
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.8"/>
-	<classpathentry kind="lib" path="/Users/mcoblenz/code/checker-framework-1.9.12/checker/dist"/>
-	<classpathentry kind="lib" path="/Users/mcoblenz/code/checker-framework-1.9.12/checker/dist/checker.jar" sourcepath="/Users/mcoblenz/code/checker-framework-1.9.12/checker/dist/checker-source.jar"/>
-	<classpathentry kind="lib" path="/Users/mcoblenz/code/checker-framework-1.9.12/checker/dist/javac.jar" sourcepath="/jsr308-langtools/src"/>
+	<classpathentry kind="lib" path="/Users/mcoblenz/code/checker-framework/checker/dist/checker.jar" sourcepath="/Users/mcoblenz/code/checker-framework-1.9.12/checker/dist/checker-source.jar"/>
+	<classpathentry kind="lib" path="/Users/mcoblenz/code/checker-framework/checker/dist/javac.jar" sourcepath="/jsr308-langtools/src"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

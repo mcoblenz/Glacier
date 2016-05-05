@@ -24,6 +24,9 @@ public class FontImpl {
 		// Arguably it would be preferable for this to not be an error.
 		//::error: (assignment.type.incompatible)
 		SColor a = new ColorImpl(fontColor);
+		
+		// Arguably it would be preferable for this to not be an error either.
+		//::error: (type.invalid)
 		SColor c = fontColor != null ? new ColorImpl(fontColor) : null;
 	}
 }

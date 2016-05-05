@@ -5,6 +5,7 @@ import java.util.List;
 
 class ListProcessor {
     static <T> List<T> process(List<? extends T> c) {
+    //::warning: [unchecked] unchecked cast
 	return (List<T>)c;
     }
 }

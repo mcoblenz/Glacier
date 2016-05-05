@@ -57,7 +57,6 @@ import edu.cmu.cs.glacier.qual.Mutable;
 
 
 public class GlacierAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
-	protected static boolean FLOW_BY_DEFAULT = false; // No flow needed for Glacier. Disabling this avoids inferring Top incorrectly.
 	/*
 	private class GlacierTreeAnnotator extends TreeScanner <Void, AnnotatedTypeMirror> {
 
@@ -97,7 +96,7 @@ public class GlacierAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 	protected final AnnotationMirror MUTABLE, IMMUTABLE, GLACIER_BOTTOM;
 
 	public GlacierAnnotatedTypeFactory(BaseTypeChecker checker) {
-		super(checker);
+		super(checker, false); // Must disable flow analysis for correct behavior in Glacier.
 		
 		MUTABLE = AnnotationUtils.fromClass(elements, Mutable.class);
 		IMMUTABLE = AnnotationUtils.fromClass(elements, Immutable.class);
