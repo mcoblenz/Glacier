@@ -39,6 +39,7 @@ import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
 import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.dataflow.util.PurityUtils;
 import org.checkerframework.framework.source.Result;
+import org.checkerframework.javacutil.TypesUtils;
 
 import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.AssignmentTree;
@@ -75,16 +76,15 @@ public class GlacierVisitor extends BaseTypeVisitor<GlacierAnnotatedTypeFactory>
 		boolean foundImmutable = false;
 		
 		List <? extends AnnotationTree> annotations = modifiers.getAnnotations();
-		for (AnnotationTree a : annotations) {
-	        Element element = TreeInfo.symbol((JCTree) a.getAnnotationType());
-	        if (element.toString().equals(Immutable.class.getName())) {
+		for (AnnotationMirror a : InternalUtils.annotationsFromTypeAnnotationTrees(annotations)) {
+	        if (AnnotationUtils.areSameByClass(a,Immutable.class)) {
 	        	foundImmutable = true;
 	        }
 		}
 		
 		return foundImmutable;
 	}
-	
+
 	@Override
 	public Void visitClass(ClassTree node, Void p) {
 		super.visitClass(node, p);
@@ -198,20 +198,11 @@ public class GlacierVisitor extends BaseTypeVisitor<GlacierAnnotatedTypeFactory>
     @Override
     public boolean isValidUse(AnnotatedDeclaredType declarationType,
             AnnotatedDeclaredType useType, Tree tree) {
-       	// If the declared type is Object, the use can have any Glacier annotation.
-     	if (types.directSupertypes(declarationType.getUnderlyingType()).size() == 0) {
-    		return true;
-    	}
-    	
-    	AnnotationMirror immutableAnnotation = AnnotationUtils.fromClass(elements, Immutable.class);
-    	AnnotationMirror useAnnotation = useType.getAnnotationInHierarchy(immutableAnnotation);
-  
-    	if (useAnnotation != null) {
-    	 return declarationType.hasAnnotation(useAnnotation);
-    	}
-    	else {
-    		return !declarationType.hasAnnotation(useAnnotation);
-    	}
+        if(TypesUtils.isObject(declarationType.getUnderlyingType())) {
+            // If the declared type is Object, the use can have any Glacier annotation.
+            return true;
+        }
+    	return super.isValidUse(declarationType, useType, tree);
     }
     
     protected Set<? extends AnnotationMirror> getExceptionParameterLowerBoundAnnotations() {
@@ -233,7 +224,7 @@ public class GlacierVisitor extends BaseTypeVisitor<GlacierAnnotatedTypeFactory>
     	// It's okay to assign from an immutable class to an variable of type Object,
     	// even if the variable is mutable.
     	
-    	if ((types.directSupertypes(varType.getUnderlyingType())).size() == 0) {
+    	if (TypesUtils.isObject(varType.getUnderlyingType())) {
     		// We're assigning to something of type Object, so its annotations don't matter.
     		// No other checks to do.
     	}
@@ -255,6 +246,38 @@ public class GlacierVisitor extends BaseTypeVisitor<GlacierAnnotatedTypeFactory>
     @Override
     protected void checkTypecastSafety(TypeCastTree node, Void p) {
     	// For now, do nothing. There's nothing to check that isn't already expressed by Java's type system.
+    }
+    
+    /**
+     * Indicates whether to skip subtype checks on the receiver when
+     * checking method invocability. A visitor may, for example,
+     * allow a method to be invoked even if the receivers are siblings
+     * in a hierarchy, provided that some other condition (implemented
+     * by the visitor) is satisfied.
+     *
+     * @param node                        the method invocation node
+     * @param methodDefinitionReceiver    the ATM of the receiver of the method definition
+     * @param methodCallReceiver          the ATM of the receiver of the method call
+     *
+     * @return whether to skip subtype checks on the receiver
+     */
+    @Override
+    protected boolean skipReceiverSubtypeCheck(MethodInvocationTree node,
+            AnnotatedTypeMirror methodDefinitionReceiver,
+            AnnotatedTypeMirror methodCallReceiver) {
+    	
+    	TypeMirror definitionType = methodDefinitionReceiver.getUnderlyingType();
+    	
+    	// It's okay to invoke methods that are defined on java.lang.Object or on java.lang.Enum.
+    	if (TypesUtils.isObject(definitionType)) {
+    		return true;
+    	}
+    	else if (definitionType instanceof DeclaredType) {
+    		DeclaredType declaredDefinitionType = (DeclaredType)definitionType;
+    		return TypesUtils.getQualifiedName(declaredDefinitionType).contentEquals("java.lang.Enum");
+    	}
+    	return false;
+    			
     }
     
     /**

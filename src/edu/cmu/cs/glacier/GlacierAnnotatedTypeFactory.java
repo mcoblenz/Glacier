@@ -338,28 +338,6 @@ public class GlacierAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             visitedNodes.put(type, r);
             r = scanAndReduce(type.getSuperBound(), p, r);
             visitedNodes.put(type, r);
-            
-            
-			// For now, if any bound is immutable, the whole thing has to be immutable.
-			boolean foundImmutableBound = false;
-			if (type.getExtendsBound().getAnnotation(Immutable.class) != null) {
-				foundImmutableBound = true;
-			}
-			
-			if (type.getSuperBound().getAnnotation(Immutable.class) != null) {
-				foundImmutableBound = true;
-			}
-			
-			
-			if (foundImmutableBound) {
-				type.addAnnotation(Immutable.class);
-				assert(!type.hasAnnotation(Mutable.class));
-			}
-			else {
-				type.addAnnotation(Mutable.class);
-				assert(!type.hasAnnotation(Immutable.class));
-			}
-
             return r;
         }
         
