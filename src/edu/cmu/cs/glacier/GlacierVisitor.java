@@ -586,7 +586,7 @@ public class GlacierVisitor extends BaseTypeVisitor<GlacierAnnotatedTypeFactory>
             // respect to JLS, but overrider receiver is not a subtype of the
             // overridden receiver.  Hence copying the annotations.
             // TODO: this will need to be improved for generic receivers.
-            if (types.directSupertypes(overriddenType.getUnderlyingType()).size() == 0) {
+        	if (TypesUtils.isObject(overriddenType.getUnderlyingType())) {
             	// We are overriding a method on Object. Nothing to check.
             	return true;
             }
