@@ -249,6 +249,38 @@ public class GlacierVisitor extends BaseTypeVisitor<GlacierAnnotatedTypeFactory>
     }
     
     /**
+     * Indicates whether to skip subtype checks on the receiver when
+     * checking method invocability. A visitor may, for example,
+     * allow a method to be invoked even if the receivers are siblings
+     * in a hierarchy, provided that some other condition (implemented
+     * by the visitor) is satisfied.
+     *
+     * @param node                        the method invocation node
+     * @param methodDefinitionReceiver    the ATM of the receiver of the method definition
+     * @param methodCallReceiver          the ATM of the receiver of the method call
+     *
+     * @return whether to skip subtype checks on the receiver
+     */
+    @Override
+    protected boolean skipReceiverSubtypeCheck(MethodInvocationTree node,
+            AnnotatedTypeMirror methodDefinitionReceiver,
+            AnnotatedTypeMirror methodCallReceiver) {
+    	
+    	TypeMirror definitionType = methodDefinitionReceiver.getUnderlyingType();
+    	
+    	// It's okay to invoke methods that are defined on java.lang.Object or on java.lang.Enum.
+    	if (TypesUtils.isObject(definitionType)) {
+    		return true;
+    	}
+    	else if (definitionType instanceof DeclaredType) {
+    		DeclaredType declaredDefinitionType = (DeclaredType)definitionType;
+    		return TypesUtils.getQualifiedName(declaredDefinitionType).contentEquals("java.lang.Enum");
+    	}
+    	return false;
+    			
+    }
+    
+    /**
      * MJC: This override is here solely so I can modify OverrideChecker, which is private. There are no other changes.
      * Type checks that a method may override another method.
      * Uses the OverrideChecker class.
