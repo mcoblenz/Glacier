@@ -202,7 +202,18 @@ public class GlacierVisitor extends BaseTypeVisitor<GlacierAnnotatedTypeFactory>
             // If the declared type is Object, the use can have any Glacier annotation.
             return true;
         }
-    	return super.isValidUse(declarationType, useType, tree);
+
+        // We need to make sure that users never apply annotations that conflict with the ones in the declarations. 
+        // Check that directly rather than calling super.isValidUse().
+        AnnotationMirror immutableAnnotation = AnnotationUtils.fromClass(elements, Immutable.class);
+        AnnotationMirror useAnnotation = useType.getAnnotationInHierarchy(immutableAnnotation);
+
+        if (useAnnotation != null) {
+        	return declarationType.hasAnnotation(useAnnotation);
+        }
+        else {
+        	return !declarationType.hasAnnotation(useAnnotation);
+        }
     }
     
     protected Set<? extends AnnotationMirror> getExceptionParameterLowerBoundAnnotations() {
