@@ -169,6 +169,7 @@ public class GlacierAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     protected void annotateInheritedFromClass(/*@Mutable*/ AnnotatedTypeMirror type,
             Set<AnnotationMirror> fromClass) {
         type.addMissingAnnotations(fromClass);
+        
     }
     
 
@@ -325,6 +326,10 @@ public class GlacierAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
         @Override
         public Void visitPrimitive(AnnotatedPrimitiveType type, GlacierAnnotatedTypeFactory p) {
+        	// All primitives are immutable.
+        	if (!type.hasAnnotation(Immutable.class)) {
+        		type.addAnnotation(Immutable.class);
+        	}
             return null;
         }
 
