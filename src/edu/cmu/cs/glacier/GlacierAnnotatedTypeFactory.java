@@ -134,7 +134,8 @@ public class GlacierAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 	
 	
 	private static boolean isWhitelistedImmutableClass(Element element) {
-		if (element.asType().toString().equals("java.lang.String")) {
+		if (element.asType().toString().equals("java.lang.String") ||
+			element.asType().toString().equals("java.lang.Number")) {
 			return true;
 		}
 		// TODO: add more classes.
