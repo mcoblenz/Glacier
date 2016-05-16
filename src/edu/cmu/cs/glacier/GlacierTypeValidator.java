@@ -6,8 +6,11 @@ import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.framework.source.Result;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.javacutil.TypesUtils;
 
 import com.sun.source.tree.Tree;
+
+import edu.cmu.cs.glacier.qual.Immutable;
 
 public class GlacierTypeValidator extends BaseTypeValidator {
 
@@ -15,6 +18,20 @@ public class GlacierTypeValidator extends BaseTypeValidator {
 			AnnotatedTypeFactory atypeFactory) {
 		super(checker, visitor, atypeFactory);
 	}
+	
+	/**
+     * @return true if the effective annotations on the upperBound are above those on the lowerBound
+     */
+	
+	@Override
+    public boolean areBoundsValid(final AnnotatedTypeMirror upperBound, final AnnotatedTypeMirror lowerBound) {
+		if (TypesUtils.isObject(upperBound.getUnderlyingType()) && !upperBound.hasAnnotation(Immutable.class)) {
+			// If the upper bound is Object, it'll default to Mutable, in which case an Immutable lower bound is acceptable.
+			return true;
+		}
+		return super.areBoundsValid(upperBound, lowerBound);
+    }
+    
     
     protected void reportValidityResult(
             final /*@CompilerMessageKey*/ String errorType,
