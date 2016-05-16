@@ -23,15 +23,22 @@ public class GlacierTypeHierarchy extends DefaultTypeHierarchy {
             boolean ignoreRawTypes, boolean invariantArrayComponents) {
     	super(checker, qualifierHierarchy, ignoreRawTypes, invariantArrayComponents, true);
     }
-
-
+    
+    /**
+     * Compare the primary annotations of subtype and supertype.
+     * @param annosCanBeEmtpy Indicates that annotations may be missing from the typemirror.
+     * @return true if the primary annotation on subtype {@literal <:} primary annotation on supertype for the current top or
+     * both annotations are null.  False is returned if one annotation is null and the other is not.
+     */
     @Override
-	public boolean isSubtype(AnnotatedTypeMirror subtype, AnnotatedTypeMirror supertype) {    	
+    protected boolean isPrimarySubtype(AnnotatedTypeMirror subtype, AnnotatedTypeMirror supertype,
+                                       boolean annosCanBeEmpty) {
 		if (TypesUtils.isObject(supertype.getUnderlyingType())){
 			// Everything is a subtype of Object, regardless of annotations.
 			return true;
 		}
-		if (super.isSubtype(subtype, supertype)) {
+
+		if (super.isPrimarySubtype(subtype, supertype, annosCanBeEmpty)) {
 			return true;
 		}
 		
@@ -47,29 +54,6 @@ public class GlacierTypeHierarchy extends DefaultTypeHierarchy {
 			}
 		}
 		return false;
+    }
 
-	}
-	@Override
-	public boolean isSubtype(AnnotatedTypeMirror subtype, AnnotatedTypeMirror supertype, AnnotationMirror top) {
-		if (TypesUtils.isObject(supertype.getUnderlyingType())){
-			// Everything is a subtype of Object, regardless of annotations.
-			return true;
-		}
-		if (super.isSubtype(subtype, supertype, top)) {
-			return true;
-		}
-				
-		// The subtype might be an immutable class that implements a mutable interface.
-		// If so, we'll return true even though immutable is not a subtype of mutable by itself.
-		if (supertype.getUnderlyingType().getKind() == TypeKind.DECLARED && subtype.getUnderlyingType().getKind() == TypeKind.DECLARED) {
-			DeclaredType declaredSupertype = (DeclaredType)(supertype.getUnderlyingType());
-			Element supertypeElement = declaredSupertype.asElement();
-			if (subtype.hasAnnotation(Immutable.class) && supertype.hasAnnotation(Mutable.class) &&
-					supertypeElement.getKind() == ElementKind.INTERFACE) {
-				// Do we need to check to make sure the subtype implements the supertype's interface?
-				return true;
-			}
-		}
-		return false;	
-		}
 }
