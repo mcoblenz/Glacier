@@ -1,0 +1,12 @@
+import edu.cmu.cs.glacier.qual.Immutable;
+
+package java.util;
+
+public class Arrays {
+ //   public static int hashCode(long [] a);
+ //   public static int hashCode(byte [] a);
+
+    public static int hashCode(byte @Immutable [] a);
+    
+    public static boolean equals(byte @Immutable[] a, byte @Immutable[] a2);
+}
