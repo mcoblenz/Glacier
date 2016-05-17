@@ -1,6 +1,5 @@
 package edu.cmu.cs.glacier;
 
-import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.type.DeclaredType;
@@ -14,8 +13,6 @@ import org.checkerframework.javacutil.TypesUtils;
 
 import edu.cmu.cs.glacier.qual.Immutable;
 import edu.cmu.cs.glacier.qual.Mutable;
-
-import javax.lang.model.util.Types;
 
 public class GlacierTypeHierarchy extends DefaultTypeHierarchy {
 	

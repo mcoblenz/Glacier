@@ -1,8 +1,6 @@
 package edu.cmu.cs.glacier;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -10,18 +8,11 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeParameterElement;
-import javax.lang.model.type.DeclaredType;
-import javax.lang.model.type.PrimitiveType;
-import javax.lang.model.type.TypeKind;
-import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Types;
 
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
-import org.checkerframework.framework.source.Result;
-import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
-import org.checkerframework.framework.type.DefaultTypeHierarchy;
 import org.checkerframework.framework.type.ElementAnnotationApplier;
 import org.checkerframework.framework.type.TypeHierarchy;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
@@ -38,61 +29,16 @@ import org.checkerframework.framework.type.visitor.AnnotatedTypeScanner;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.TreeUtils;
 
-import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.ClassTree;
-import com.sun.source.tree.ExpressionTree;
-import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
-import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
-import com.sun.tools.javac.code.Symbol.MethodSymbol;
-import com.sun.tools.javac.code.Type.ArrayType;
-import com.sun.tools.javac.tree.JCTree;
-import com.sun.tools.javac.tree.TreeInfo;
 
 import edu.cmu.cs.glacier.qual.GlacierBottom;
-import edu.cmu.cs.glacier.qual.GlacierTop;
 import edu.cmu.cs.glacier.qual.Immutable;
 import edu.cmu.cs.glacier.qual.Mutable;
 
 
 public class GlacierAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
-	/*
-	private class GlacierTreeAnnotator extends TreeScanner <Void, AnnotatedTypeMirror> {
-
-
-	    public Void visitVariable(VariableTree tree, AnnotatedTypeMirror type) {
-	    	if (type.getUnderlyingType().getKind() == TypeKind.DECLARED) {
-	    		DeclaredType declaredType = (DeclaredType)type.getUnderlyingType();
-	    		//System.out.println("declared type: " + declaredType);
-
-	    		if (tree.getKind() == Tree.Kind.CLASS && !type.hasAnnotation(Immutable.class)) {
-	    			// Classes are mutable by default.
-	    			type.addAnnotation(MUTABLE);
-
-	    			//System.out.println("annotating tree " + tree + ": " + type + " mutable because classes are mutable by default.");
-	    		}
-	    		else {
-	    			Element classElt = declaredType.asElement();
-	    			if (classElt != null) {
-	    				AnnotatedTypeMirror classType = fromElement(classElt);
-	    				assert classType != null : "Unexpected null type for class element: " + classElt;
-
-	    				if (classType.hasAnnotation(IMMUTABLE)) {
-	    					type.addAnnotation(IMMUTABLE);
-	    				}
-	    				else {
-	    					type.addAnnotation(MUTABLE);
-	    				}
-
-	    			}
-	    		}
-	    	}	    
-	    	return null;
-	    }
-	}
-	*/
-	
 	protected final AnnotationMirror MUTABLE, IMMUTABLE, GLACIER_BOTTOM;
 
 	public GlacierAnnotatedTypeFactory(BaseTypeChecker checker) {
@@ -146,12 +92,9 @@ public class GlacierAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 		// Surely there is a better API for doing this than having to try/catch.
 		try {
 			types.unboxedType(type.getUnderlyingType());
-//			System.out.println("found autoboxed immutable class: " + type);
 			return true;
 		}
 		catch (IllegalArgumentException e) {
-//			System.out.println("not an autoboxed immutable class: " + type);
-
 			return false;
 		}
 	}
@@ -170,7 +113,6 @@ public class GlacierAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     protected void annotateInheritedFromClass(/*@Mutable*/ AnnotatedTypeMirror type,
             Set<AnnotationMirror> fromClass) {
         type.addMissingAnnotations(fromClass);
-        
     }
     
 
@@ -257,8 +199,6 @@ public class GlacierAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
         @Override
         public Void visitTypeVariable(AnnotatedTypeVariable type, GlacierAnnotatedTypeFactory p) {
-//            assert(!type.hasAnnotation(GlacierBottom.class));
-
             TypeParameterElement tpelt = (TypeParameterElement) type.getUnderlyingType().asElement();
             if (!visited.containsKey(tpelt)) {
                 visited.put(tpelt, type);
@@ -273,7 +213,7 @@ public class GlacierAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 
                 visited.remove(tpelt);
             }
-//            assert(!type.hasAnnotation(GlacierBottom.class));
+
             return null;
         }
 
