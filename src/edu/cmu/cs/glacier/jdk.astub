@@ -1,4 +1,4 @@
-import edu.cmu.cs.glacier.qual.Immutable;
+import edu.cmu.cs.glacier.qual.*;
 
 package java.util;
 
@@ -6,7 +6,7 @@ public class Arrays {
  //   public static int hashCode(long [] a);
  //   public static int hashCode(byte [] a);
 
-    public static int hashCode(byte @Immutable [] a);
+    public static int hashCode(byte @ReadOnly [] a);
     
-    public static boolean equals(byte @Immutable[] a, byte @Immutable[] a2);
+    public static boolean equals(byte @ReadOnly[] a, byte @ReadOnly[] a2);
 }

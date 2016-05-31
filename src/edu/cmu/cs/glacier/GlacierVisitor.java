@@ -193,7 +193,7 @@ public class GlacierVisitor extends BaseTypeVisitor<GlacierAnnotatedTypeFactory>
             AnnotatedDeclaredType useType, Tree tree) {
     	
     	// Users can't specify top or bottom annotations.
-    	if (useType.hasAnnotation(GlacierTop.class) || 
+    	if (useType.hasAnnotation(ReadOnly.class) || 
     			useType.hasAnnotation(GlacierBottom.class)) {
     		return false;
     	}

@@ -9,7 +9,7 @@ import javax.lang.model.type.TypeKind;
 import java.lang.annotation.ElementType;
 
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
-@SubtypeOf({GlacierTop.class})
+@SubtypeOf({ReadOnly.class})
 @ImplicitFor(types = {  TypeKind.BOOLEAN, TypeKind.BYTE,
 						TypeKind.CHAR, TypeKind.DOUBLE,
         				TypeKind.FLOAT, TypeKind.INT,
