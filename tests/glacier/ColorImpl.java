@@ -6,7 +6,9 @@ public class ColorImpl {
     private byte [] _mutableRgb;
     
     public int hashCode() {
-    	Arrays.hashCode(_mutableRgb); // This should be OK too
+    	// This should be OK, but will be an error until we have a @ReadOnly annotation.
+    	Arrays.hashCode(_mutableRgb); 
+    	
     	return Arrays.hashCode(_rgb);
     }
 }
