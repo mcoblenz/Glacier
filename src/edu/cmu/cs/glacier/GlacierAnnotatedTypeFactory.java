@@ -33,13 +33,11 @@ import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePath;
 
-import edu.cmu.cs.glacier.qual.GlacierBottom;
-import edu.cmu.cs.glacier.qual.Immutable;
-import edu.cmu.cs.glacier.qual.Mutable;
+import edu.cmu.cs.glacier.qual.*;
 
 
 public class GlacierAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
-	protected final AnnotationMirror MUTABLE, IMMUTABLE, GLACIER_BOTTOM;
+	protected final AnnotationMirror MUTABLE, IMMUTABLE, GLACIER_BOTTOM, GLACIER_TOP;
 
 	public GlacierAnnotatedTypeFactory(BaseTypeChecker checker) {
 		super(checker, false); // Must disable flow analysis for correct behavior in Glacier.
@@ -47,6 +45,7 @@ public class GlacierAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 		MUTABLE = AnnotationUtils.fromClass(elements, Mutable.class);
 		IMMUTABLE = AnnotationUtils.fromClass(elements, Immutable.class);
 		GLACIER_BOTTOM = AnnotationUtils.fromClass(elements, GlacierBottom.class);
+		GLACIER_TOP = AnnotationUtils.fromClass(elements, GlacierTop.class);
 		this.postInit();
 	}
 	
@@ -67,11 +66,11 @@ public class GlacierAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
         AnnotatedDeclaredType enclosingClassType = getAnnotatedType(enclosingClass);
 
-        if (!selfType.isAnnotatedInHierarchy(IMMUTABLE)) { // If there's already an annotation on selfType and it conflicts with Mutable, that error will be found by the type validity check elsewhere.
+        if (!selfType.isAnnotatedInHierarchy(GLACIER_TOP)) { // If there's already an annotation on selfType and it conflicts with Mutable, that error will be found by the type validity check elsewhere.
         	if (enclosingClassType.hasAnnotation(IMMUTABLE)) {
         		selfType.addAnnotation(IMMUTABLE);
         	}
-        	else if (!selfType.isAnnotatedInHierarchy(IMMUTABLE)) { // If there's already an annotation on selfType and it conflicts with Mutable, that error will be found by the type validity check elsewhere.
+        	else {
         		selfType.addAnnotation(MUTABLE);
         	}
         }
@@ -172,14 +171,14 @@ public class GlacierAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             	boolean isHardCodedImmutable = isAutoboxedImmutableClass(p.types, type) || 
             			isWhitelistedImmutableClass(classElt);
             	
-            	if (isHardCodedImmutable) {
+            	if (isHardCodedImmutable && !type.isAnnotatedInHierarchy(p.GLACIER_TOP)) {
                 	type.addAnnotation(Immutable.class);
                 }
                 else {
                 	AnnotatedTypeMirror classType = p.fromElement(classElt);
                 	assert classType != null : "Unexpected null type for class element: " + classElt;
                 	// If the class type has no annotations, infer @Mutable.
-                	if (!classType.hasAnnotation(Immutable.class) && !type.isAnnotatedInHierarchy(p.GLACIER_BOTTOM)) {
+                	if (!classType.isAnnotatedInHierarchy(p.GLACIER_TOP) && !type.isAnnotatedInHierarchy(p.GLACIER_TOP)) {
                 		type.addAnnotation(Mutable.class);
                 	}
                 	else {

@@ -6,10 +6,12 @@ import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.framework.source.Result;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.javacutil.TypesUtils;
 
 import com.sun.source.tree.Tree;
 
+import edu.cmu.cs.glacier.qual.GlacierBottom;
 import edu.cmu.cs.glacier.qual.Immutable;
 
 public class GlacierTypeValidator extends BaseTypeValidator {
@@ -40,5 +42,18 @@ public class GlacierTypeValidator extends BaseTypeValidator {
                         type.getUnderlyingType().toString()), p);
         isValid = false;
     }
+    
+    
+    @Override
+    public Void visitDeclared(AnnotatedDeclaredType type, Tree tree) {
+    	if (type.hasAnnotation(GlacierBottom.class)) {
+    		reportError(type, tree);
+    	}
+    	else {
+    		return super.visitDeclared(type, tree);
+    	}
+		return null;
+    }
+    
 
 }

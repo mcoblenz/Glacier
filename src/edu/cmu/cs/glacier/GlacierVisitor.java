@@ -52,8 +52,7 @@ import com.sun.source.tree.Tree.Kind;
 import com.sun.source.util.TreePath;
 import com.sun.tools.javac.tree.JCTree;
 
-import edu.cmu.cs.glacier.qual.GlacierBottom;
-import edu.cmu.cs.glacier.qual.Immutable;
+import edu.cmu.cs.glacier.qual.*;
 
 public class GlacierVisitor extends BaseTypeVisitor<GlacierAnnotatedTypeFactory> {
 
@@ -192,6 +191,13 @@ public class GlacierVisitor extends BaseTypeVisitor<GlacierAnnotatedTypeFactory>
     @Override
     public boolean isValidUse(AnnotatedDeclaredType declarationType,
             AnnotatedDeclaredType useType, Tree tree) {
+    	
+    	// Users can't specify top or bottom annotations.
+    	if (useType.hasAnnotation(GlacierTop.class) || 
+    			useType.hasAnnotation(GlacierBottom.class)) {
+    		return false;
+    	}
+    	
         if(TypesUtils.isObject(declarationType.getUnderlyingType())) {
             // If the declared type is Object, the use can have any Glacier annotation.
             return true;
