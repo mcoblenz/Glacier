@@ -1,5 +1,6 @@
 package edu.cmu.cs.glacier;
 
+import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -39,6 +40,7 @@ import org.checkerframework.framework.source.Result;
 import org.checkerframework.javacutil.TypesUtils;
 
 import com.sun.source.tree.AnnotationTree;
+import com.sun.source.tree.ArrayAccessTree;
 import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.ExpressionTree;
@@ -65,12 +67,12 @@ public class GlacierVisitor extends BaseTypeVisitor<GlacierAnnotatedTypeFactory>
         return new GlacierTypeValidator(checker, this, atypeFactory);
     }
 	
-	private static boolean modifiersIncludeImmutable(ModifiersTree modifiers) {
+	private static boolean modifiersIncludeModifier(ModifiersTree modifiers, Class<? extends Annotation> modifier) {
 		boolean foundImmutable = false;
 		
 		List <? extends AnnotationTree> annotations = modifiers.getAnnotations();
 		for (AnnotationMirror a : InternalUtils.annotationsFromTypeAnnotationTrees(annotations)) {
-	        if (AnnotationUtils.areSameByClass(a,Immutable.class)) {
+	        if (AnnotationUtils.areSameByClass(a,modifier)) {
 	        	foundImmutable = true;
 	        }
 		}
@@ -82,16 +84,12 @@ public class GlacierVisitor extends BaseTypeVisitor<GlacierAnnotatedTypeFactory>
 	public Void visitClass(ClassTree node, Void p) {
 		super.visitClass(node, p);
 		
-		boolean classIsImmutable = modifiersIncludeImmutable(node.getModifiers());
+		boolean classIsImmutable = modifiersIncludeModifier(node.getModifiers(), Immutable.class);
+		boolean classIsReadonly = modifiersIncludeModifier(node.getModifiers(), ReadOnly.class);
 
-		/*		
-		if (classIsImmutable) {
-        	System.out.println("Class" + node + "is immutable!");
+		if (classIsReadonly) {
+			checker.report(Result.failure("glacier.readonly.class"), node);
 		}
-		else {
-        	System.out.println("Class" + node + "is NOT immutable!");
-		}
-		*/
 		
 		if (classIsImmutable) {
 			// Check to make sure all fields are immutable.
@@ -150,9 +148,9 @@ public class GlacierVisitor extends BaseTypeVisitor<GlacierAnnotatedTypeFactory>
     	
 		ExpressionTree variable = node.getVariable();
 		
-		AnnotatedTypeMirror ownerType = null;
-		
 		if (TreeUtils.isFieldAccess(variable)) {
+			AnnotatedTypeMirror ownerType = null;
+
 			if (variable.getKind().equals(Tree.Kind.MEMBER_SELECT)) {
 				// explicit field access
 				MemberSelectTree memberSelect = (MemberSelectTree) variable;
@@ -171,11 +169,21 @@ public class GlacierVisitor extends BaseTypeVisitor<GlacierAnnotatedTypeFactory>
 				AnnotatedDeclaredType classType = visitorState.getClassType();
 
 				boolean classOwnsAssignedField = ownerType.getUnderlyingType().equals(classType.getUnderlyingType()); 
+				AnnotationMirror ownerAnnotationMirror = ownerType.getAnnotationInHierarchy(atypeFactory.READ_ONLY);
 
-
-				if ((!methodIsConstructor || !classOwnsAssignedField) && ownerType.getAnnotation(Immutable.class) != null) {
+				if ((!methodIsConstructor || !classOwnsAssignedField) && 
+					!atypeFactory.getQualifierHierarchy().isSubtype(ownerAnnotationMirror, atypeFactory.MUTABLE)) {
 					checker.report(Result.failure("glacier.assignment"), node);
 				}
+			}
+		}
+		else if (variable.getKind() == Tree.Kind.ARRAY_ACCESS) {
+			ArrayAccessTree arrayAccessTree = (ArrayAccessTree)variable;
+			
+			AnnotatedTypeMirror arrayType = atypeFactory.getAnnotatedType(arrayAccessTree.getExpression());
+			AnnotationMirror arrayTypeAnnotation = arrayType.getAnnotationInHierarchy(atypeFactory.READ_ONLY);
+			if (!atypeFactory.getQualifierHierarchy().isSubtype(arrayTypeAnnotation, atypeFactory.MUTABLE)) {
+				checker.report(Result.failure("glacier.assignment.array"), node);
 			}
 		}
 
@@ -192,9 +200,8 @@ public class GlacierVisitor extends BaseTypeVisitor<GlacierAnnotatedTypeFactory>
     public boolean isValidUse(AnnotatedDeclaredType declarationType,
             AnnotatedDeclaredType useType, Tree tree) {
     	
-    	// Users can't specify top or bottom annotations.
-    	if (useType.hasAnnotation(ReadOnly.class) || 
-    			useType.hasAnnotation(GlacierBottom.class)) {
+    	// Users can't specify bottom annotations.
+    	if (useType.hasAnnotation(GlacierBottom.class)) {
     		return false;
     	}
     	

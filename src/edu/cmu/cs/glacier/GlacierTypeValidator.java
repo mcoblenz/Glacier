@@ -11,8 +11,7 @@ import org.checkerframework.javacutil.TypesUtils;
 
 import com.sun.source.tree.Tree;
 
-import edu.cmu.cs.glacier.qual.GlacierBottom;
-import edu.cmu.cs.glacier.qual.Immutable;
+import edu.cmu.cs.glacier.qual.*;
 
 public class GlacierTypeValidator extends BaseTypeValidator {
 
