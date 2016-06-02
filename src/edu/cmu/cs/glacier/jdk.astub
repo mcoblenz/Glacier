@@ -10,3 +10,7 @@ public class Arrays {
     
     public static boolean equals(byte @ReadOnly[] a, byte @ReadOnly[] a2);
 }
+
+package java.lang;
+@Immutable public class String {}
+@Immutable public class Number {}
