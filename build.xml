@@ -3,20 +3,19 @@
 
 <project name="Glacier" default="CreateJar" basedir=".">
   <property name="jsr308.langtools.dist" value="/Users/mcoblenz/code/jsr308-langtools/dist"/>
-  <property name="javac.lib" value="${jsr308.langtools.dist}/lib/javac.jar"/>
+
   <property name="glacier.lib" value="${basedir}/Glacier.jar"/>
+  
+  <property name="checker-framework.loc" value="/Users/mcoblenz/code/checker-framework"/>
+  <property name="checker.lib" value="${checker-framework.loc}/checker/dist/checker.jar"/>
+  <property name="javac.lib" value="${checker-framework.loc}/checker/dist/javac.jar"/>
 
   <property name="tests" value="tests"/>
   <property name="tests.build" value="${tests}/build"/>
-
   <property name="build.reports" value="${tests}/build/reports/"/>
-  <property name="checker-framework.loc" value="/Users/mcoblenz/code/checker-framework"/>
-  <property name="checker.lib" value="${checker-framework.loc}/checker/dist/checker.jar"/>
-  
-  <property name="framework.loc" value="${checker-framework.loc}/framework"/>
-  <property name="junit.lib" value="${framework.loc}/tests/junit-4.12.jar"/>
-  
-  <property name="hamcrest.lib" value="${framework.loc}/tests/hamcrest-core-1.3.jar"/>
+  <property name="tests-framework.loc" value="${checker-framework.loc}/framework/tests/"/>
+  <property name="junit.lib" value="${tests-framework.loc}/junit-4.12.jar"/>
+  <property name="hamcrest.lib" value="${tests-framework.loc}/hamcrest-core-1.3.jar"/>
 
   <property name="build" value="bin"/>
   <target name="build" depends=""
