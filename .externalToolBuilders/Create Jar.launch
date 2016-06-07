@@ -6,6 +6,14 @@
 <stringAttribute key="org.eclipse.jdt.launching.CLASSPATH_PROVIDER" value="org.eclipse.ant.ui.AntClasspathProvider"/>
 <booleanAttribute key="org.eclipse.jdt.launching.DEFAULT_CLASSPATH" value="true"/>
 <stringAttribute key="org.eclipse.jdt.launching.PROJECT_ATTR" value="Glacier"/>
+<mapAttribute key="org.eclipse.ui.externaltools.ATTR_ANT_PROPERTIES">
+<mapEntry key="checker-framework.loc" value="${CHECKER_FRAMEWORK_PATH}"/>
+<mapEntry key="eclipse.home" value="/Applications/Eclipse.app/Contents/Eclipse"/>
+<mapEntry key="eclipse.pdebuild.home" value="/Applications/Eclipse.app/Contents/Eclipse/plugins/org.eclipse.pde.build_3.9.100.v20150521-1524/./"/>
+<mapEntry key="eclipse.pdebuild.scripts" value="/Applications/Eclipse.app/Contents/Eclipse/plugins/org.eclipse.pde.build_3.9.100.v20150521-1524/scripts/"/>
+<mapEntry key="eclipse.pdebuild.templates" value="/Applications/Eclipse.app/Contents/Eclipse/plugins/org.eclipse.pde.build_3.9.100.v20150521-1524/templates/"/>
+<mapEntry key="eclipse.running" value="true"/>
+</mapAttribute>
 <stringAttribute key="org.eclipse.ui.externaltools.ATTR_LOCATION" value="${workspace_loc:/Glacier/build.xml}"/>
 <stringAttribute key="org.eclipse.ui.externaltools.ATTR_RUN_BUILD_KINDS" value="full,incremental,"/>
 <booleanAttribute key="org.eclipse.ui.externaltools.ATTR_TRIGGERS_CONFIGURED" value="true"/>
