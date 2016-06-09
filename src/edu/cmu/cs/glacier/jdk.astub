@@ -3,12 +3,10 @@ import edu.cmu.cs.glacier.qual.*;
 package java.util;
 
 public class Arrays {
- //   public static int hashCode(long [] a);
- //   public static int hashCode(byte [] a);
-
-    public static int hashCode(byte @ReadOnly [] a);
+    // TODO: add lots more methods here.
+    public static @Immutable int hashCode(@Immutable byte @ReadOnly [] a);
     
-    public static boolean equals(byte @ReadOnly[] a, byte @ReadOnly[] a2);
+    public static @Immutable boolean equals(@Immutable byte @ReadOnly[] a, byte @ReadOnly[] a2);
 }
 
 package java.lang;
