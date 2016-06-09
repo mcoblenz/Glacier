@@ -9,6 +9,10 @@ public class Arrays {
     public static @Immutable boolean equals(@Immutable byte @ReadOnly[] a, byte @ReadOnly[] a2);
 }
 
+public class Collections {
+    public static <@ReadOnly T extends Comparable<? super @ReadOnly T>> void sort(List<@ReadOnly T> list);
+}
+
 // TODO: Find out why these annotations don't seem to have any effect.
 package java.lang;
 @Immutable public class String {}
