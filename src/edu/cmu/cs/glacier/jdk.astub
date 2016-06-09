@@ -9,6 +9,7 @@ public class Arrays {
     public static @Immutable boolean equals(@Immutable byte @ReadOnly[] a, byte @ReadOnly[] a2);
 }
 
+// TODO: Find out why these annotations don't seem to have any effect.
 package java.lang;
 @Immutable public class String {}
 @Immutable public class Number {}

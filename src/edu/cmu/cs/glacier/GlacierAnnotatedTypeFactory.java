@@ -77,7 +77,16 @@ public class GlacierAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         return selfType;
     }
 	
-		
+	
+	private static boolean isWhitelistedImmutableClass(Element element) {
+		if (element.asType().toString().equals("java.lang.String") ||
+			element.asType().toString().equals("java.lang.Number")) {
+			return true;
+		}
+		// TODO: add more classes.
+		return false;
+	}
+	
 	private static boolean isAutoboxedImmutableClass(Types types, AnnotatedTypeMirror type) {
 		// Surely there is a better API for doing this than having to try/catch.
 		try {
@@ -159,7 +168,8 @@ public class GlacierAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             // are no annotations from that hierarchy already on the type.
 
             if (classElt != null) {
-            	boolean isHardCodedImmutable = isAutoboxedImmutableClass(p.types, type);
+            	boolean isHardCodedImmutable = isAutoboxedImmutableClass(p.types, type) || 
+            			isWhitelistedImmutableClass(classElt);
             	
             	if (isHardCodedImmutable && !type.isAnnotatedInHierarchy(p.READ_ONLY)) {
                 	type.addAnnotation(Immutable.class);
