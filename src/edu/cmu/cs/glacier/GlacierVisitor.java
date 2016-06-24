@@ -599,6 +599,12 @@ public class GlacierVisitor extends BaseTypeVisitor<GlacierAnnotatedTypeFactory>
         }
 
         private boolean checkReceiverOverride() {
+            /*
+             ** Don't do anything here because in Glacier, the only way for the receiver's annotation to be invalid is if it is also an invalid type.
+            */
+            return true;
+
+            /*
             // Check the receiver type.
             // isSubtype() requires its arguments to be actual subtypes with
             // respect to JLS, but overrider receiver is not a subtype of the
@@ -621,7 +627,10 @@ public class GlacierVisitor extends BaseTypeVisitor<GlacierAnnotatedTypeFactory>
                         overriderTree);
                 return false;
             }
+
             return true;
+            */
+
         }
 
         private boolean checkParameters() {
