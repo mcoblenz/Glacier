@@ -6,8 +6,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.*;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.PrimitiveType;
 import javax.lang.model.type.TypeKind;
@@ -27,11 +26,7 @@ import org.checkerframework.framework.util.ContractsUtils;
 import org.checkerframework.framework.util.FlowExpressionParseUtil;
 import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionContext;
 import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionParseException;
-import org.checkerframework.javacutil.AnnotationUtils;
-import org.checkerframework.javacutil.ErrorReporter;
-import org.checkerframework.javacutil.InternalUtils;
-import org.checkerframework.javacutil.Pair;
-import org.checkerframework.javacutil.TreeUtils;
+import org.checkerframework.javacutil.*;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeValidator;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
@@ -40,7 +35,6 @@ import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
 import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.dataflow.util.PurityUtils;
 import org.checkerframework.framework.source.Result;
-import org.checkerframework.javacutil.TypesUtils;
 
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.util.TreePath;
@@ -72,6 +66,83 @@ public class GlacierVisitor extends BaseTypeVisitor<GlacierAnnotatedTypeFactory>
 		return foundImmutable;
 	}
 
+    private void checkFieldIsImmutable(ClassTree deepestClassTree, Tree containingTree, TypeElement immediateContainingElement, Element element, boolean alsoCheckFinal) {
+        AnnotatedTypeMirror fieldType = atypeFactory.getAnnotatedType(element);
+        boolean fieldIsImmutable = fieldType.hasAnnotation(Immutable.class);
+        if (!fieldIsImmutable) {
+            // Check for permitted special cases: primitives and type parameters.
+            TypeMirror underlyingType = fieldType.getUnderlyingType();
+            boolean typeIsPrimitive = underlyingType instanceof PrimitiveType;
+            boolean typeIsImmutableClassTypeParameter = false;
+            if (underlyingType.getKind() == TypeKind.TYPEVAR) {
+                // Type variables can be assumed to be immutable if they are on an immutable class. Otherwise they are unsafe.
+                TypeVariable typeVariable = (TypeVariable)underlyingType;
+                TypeParameterElement typeVariableElement = (TypeParameterElement)(typeVariable.asElement());
+                Element elementEnclosingTypeVariable = typeVariableElement.getGenericElement();
+                if (elementEnclosingTypeVariable.getKind() == ElementKind.CLASS || elementEnclosingTypeVariable.getKind() == ElementKind.ENUM) {
+                    // Check to see if this class is immutable.
+                    TypeElement classElement = (TypeElement) elementEnclosingTypeVariable;
+                    AnnotatedTypeMirror classTypeMirror = atypeFactory.getAnnotatedType(classElement);
+                    if (classTypeMirror.hasAnnotation(Immutable.class)) {
+                        typeIsImmutableClassTypeParameter = true;
+                    }
+                }
+            }
+
+            // Primitive types are always immutable. Class type parameters will be checked when they are instantiated.
+            if (!typeIsPrimitive && !typeIsImmutableClassTypeParameter) {
+                checker.report(Result.failure("glacier.mutable.invalid"), element);
+            }
+        }
+
+        if (alsoCheckFinal) {
+            if (!ElementUtils.isFinal(element)) {
+                checker.report(Result.failure("glacier.nonfinalmember", deepestClassTree.getSimpleName(), immediateContainingElement, element), deepestClassTree);
+            }
+        }
+    }
+
+    private void checkElementMembersAreImmutable(ClassTree outermostTree, Tree containingTree, Element elem, boolean alsoCheckFinal) {
+        if (elem.getKind() == ElementKind.CLASS || elem.getKind() == ElementKind.ENUM) {
+            TypeElement typeElement = (TypeElement)elem;
+            List<? extends Element> elements = typeElement.getEnclosedElements();
+
+
+            for (Element e : elements) {
+                if (e.getKind() == ElementKind.FIELD) {
+                    // Check to make sure this field is immutable and final.
+                    checkFieldIsImmutable(outermostTree, containingTree, typeElement, e, alsoCheckFinal);
+                }
+            }
+
+            TypeMirror superclassType = typeElement.getSuperclass();
+            if (superclassType != null && superclassType.getKind() == TypeKind.DECLARED) {
+                DeclaredType superclassDeclaredType = (DeclaredType)superclassType;
+                Element superclassElement = superclassDeclaredType.asElement();
+                checkElementMembersAreImmutable(outermostTree, containingTree, superclassElement, alsoCheckFinal);
+            }
+        }
+    }
+
+    private void checkAllClassMembersAreImmutable(ClassTree outermostTree, Tree containingTree, boolean alsoCheckFinal) {
+        if (containingTree instanceof ExpressionTree) {
+            Element elem = TreeUtils.elementFromUse((ExpressionTree)containingTree);
+            checkElementMembersAreImmutable(outermostTree, containingTree, elem, alsoCheckFinal);
+        }
+    }
+
+
+
+    private void checkImmediateMembersAreImmutable(ClassTree classTree, boolean alsoCheckFinal) {
+        TypeElement classTreeAsElement = TreeUtils.elementFromDeclaration(classTree);
+        List <? extends Tree> members = classTree.getMembers();
+        for (Tree t : members) {
+            if (t.getKind() == Kind.VARIABLE) {
+                checkFieldIsImmutable(classTree, classTree, classTreeAsElement, TreeUtils.elementFromDeclaration((VariableTree) t), false);
+            }
+        }
+    }
+
 	@Override
 	public Void visitClass(ClassTree node, Void p) {
 		super.visitClass(node, p);
@@ -85,32 +156,7 @@ public class GlacierVisitor extends BaseTypeVisitor<GlacierAnnotatedTypeFactory>
 		
 		if (classIsImmutable) {
 			// Check to make sure all fields are immutable.
-			List <? extends Tree> members = node.getMembers();
-			for (Tree t : members) {
-				if (t.getKind() == Kind.VARIABLE) {					
-		            AnnotatedTypeMirror variableType = atypeFactory.getAnnotatedType(t);
-					
-					boolean fieldIsImmutable = variableType.hasAnnotation(Immutable.class);
-					if (!fieldIsImmutable) {
-						TypeMirror underlyingType = variableType.getUnderlyingType();
-						boolean typeIsPrimitive = underlyingType instanceof PrimitiveType;
-                        boolean typeIsClassTypeParameter = false;
-                        if (underlyingType.getKind() == TypeKind.TYPEVAR) {
-                            List<? extends TypeParameterTree> classTypeParameters = node.getTypeParameters();
-                            for (TypeParameterTree classTypeParameter : classTypeParameters) {
-                                if (classTypeParameter.getName().contentEquals(underlyingType.toString())) {
-                                    typeIsClassTypeParameter = true;
-                                }
-                            }
-                        }
-
-						// Primitive types are always immutable. Class type parameters will be checked when they are instantiated.
-						if (!typeIsPrimitive && !typeIsClassTypeParameter) {
-							checker.report(Result.failure("glacier.mutable.invalid"), t);
-						}
-					}
-				}
-			}
+            checkImmediateMembersAreImmutable(node, false);
 		}
 		
 		Tree superclass = node.getExtendsClause();
@@ -119,6 +165,10 @@ public class GlacierVisitor extends BaseTypeVisitor<GlacierAnnotatedTypeFactory>
 			if (superclassType.hasAnnotation(Immutable.class) && !classIsImmutable) {
 				checker.report(Result.failure("glacier.subclass.mutable", node.getSimpleName(), superclass.toString()), node);
 			}
+            else if (classIsImmutable && !superclassType.hasAnnotation(Immutable.class)) {
+                // Check members of all superclasses to make sure they're all immutable and final.
+                checkAllClassMembersAreImmutable(node, superclass, true);
+            }
 		}
 
 		
@@ -267,6 +317,7 @@ public class GlacierVisitor extends BaseTypeVisitor<GlacierAnnotatedTypeFactory>
     	// For now, do nothing. There's nothing to check that isn't already expressed by Java's type system.
     }
 
+
     protected void checkTypeArguments(Tree toptree, List<? extends AnnotatedTypeParameterBounds> paramBounds, List<? extends AnnotatedTypeMirror> typeargs, List<? extends Tree> typeargTrees) {
         super.checkTypeArguments(toptree, paramBounds, typeargs, typeargTrees);
 
@@ -277,7 +328,24 @@ public class GlacierVisitor extends BaseTypeVisitor<GlacierAnnotatedTypeFactory>
             for (AnnotatedTypeMirror typearg : typeargs) {
                 // Ignore type variables because we only want to check concrete types.
                 if (typearg.getKind() != TypeKind.TYPEVAR && !typearg.hasAnnotation(Immutable.class)) {
-                    checker.report(Result.failure("glacier.typeparameter.mutable", toptree, typearg), toptree);
+                    // One last-ditch check: maybe typearg is a wildcard. If so, it suffices if the upper bound is immutable or a type variable.
+                    boolean reportError = false;
+
+                    if (typearg.getKind() == TypeKind.WILDCARD) {
+                        AnnotatedTypeMirror.AnnotatedWildcardType annotatedWildcardType = (AnnotatedTypeMirror.AnnotatedWildcardType) typearg;
+                        AnnotatedTypeMirror extendsBound = annotatedWildcardType.getExtendsBound();
+                        if (extendsBound.getKind() != TypeKind.TYPEVAR && !extendsBound.hasAnnotation(Immutable.class)) {
+                            reportError = true;
+                        }
+                    }
+                    else {
+                        reportError = true;
+                    }
+
+                    if (reportError) {
+                        checker.report(Result.failure("glacier.typeparameter.mutable", toptree, typearg), toptree);
+
+                    }
                 }
             }
         }

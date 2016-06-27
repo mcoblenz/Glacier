@@ -10,6 +10,12 @@ class E { } // Note same name as type parameter, but mutable class.
 }
 
 @Immutable public class TypeParameter<E> extends Superclass<E> {
+    private Superclass<? extends E> s;
+    private Superclass<? extends String> t;
+
+    //::error: (glacier.typeparameter.mutable)
+    private Superclass<? extends java.util.Date> u;
+    
     void aMethod() {
 
     }

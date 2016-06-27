@@ -23,7 +23,7 @@ public class GlacierTypeHierarchy extends DefaultTypeHierarchy {
     
     /**
      * Compare the primary annotations of subtype and supertype.
-     * @param annosCanBeEmtpy Indicates that annotations may be missing from the typemirror.
+     * @param annosCanBeEmpty Indicates that annotations may be missing from the typemirror.
      * @return true if the primary annotation on subtype {@literal <:} primary annotation on supertype for the current top or
      * both annotations are null.  False is returned if one annotation is null and the other is not.
      */
