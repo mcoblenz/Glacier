@@ -14,7 +14,10 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
 
+import com.sun.source.tree.*;
+import com.sun.tools.javac.code.Type;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.framework.type.AnnotatedTypeParameterBounds;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.TypeHierarchy;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
@@ -39,17 +42,6 @@ import org.checkerframework.dataflow.util.PurityUtils;
 import org.checkerframework.framework.source.Result;
 import org.checkerframework.javacutil.TypesUtils;
 
-import com.sun.source.tree.AnnotationTree;
-import com.sun.source.tree.ArrayAccessTree;
-import com.sun.source.tree.AssignmentTree;
-import com.sun.source.tree.ClassTree;
-import com.sun.source.tree.ExpressionTree;
-import com.sun.source.tree.MemberSelectTree;
-import com.sun.source.tree.MethodInvocationTree;
-import com.sun.source.tree.MethodTree;
-import com.sun.source.tree.ModifiersTree;
-import com.sun.source.tree.Tree;
-import com.sun.source.tree.TypeCastTree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.util.TreePath;
 import com.sun.tools.javac.tree.JCTree;
@@ -101,10 +93,19 @@ public class GlacierVisitor extends BaseTypeVisitor<GlacierAnnotatedTypeFactory>
 					boolean fieldIsImmutable = variableType.hasAnnotation(Immutable.class);
 					if (!fieldIsImmutable) {
 						TypeMirror underlyingType = variableType.getUnderlyingType();
-						
-						// Primitive types are always immutable, but we need to separately
-						// typecheck them as if they were final.
-						if (!(underlyingType instanceof PrimitiveType)) { 
+						boolean typeIsPrimitive = underlyingType instanceof PrimitiveType;
+                        boolean typeIsClassTypeParameter = false;
+                        if (underlyingType.getKind() == TypeKind.TYPEVAR) {
+                            List<? extends TypeParameterTree> classTypeParameters = node.getTypeParameters();
+                            for (TypeParameterTree classTypeParameter : classTypeParameters) {
+                                if (classTypeParameter.getName().contentEquals(underlyingType.toString())) {
+                                    typeIsClassTypeParameter = true;
+                                }
+                            }
+                        }
+
+						// Primitive types are always immutable. Class type parameters will be checked when they are instantiated.
+						if (!typeIsPrimitive && !typeIsClassTypeParameter) {
 							checker.report(Result.failure("glacier.mutable.invalid"), t);
 						}
 					}
@@ -265,7 +266,23 @@ public class GlacierVisitor extends BaseTypeVisitor<GlacierAnnotatedTypeFactory>
     protected void checkTypecastSafety(TypeCastTree node, Void p) {
     	// For now, do nothing. There's nothing to check that isn't already expressed by Java's type system.
     }
-    
+
+    protected void checkTypeArguments(Tree toptree, List<? extends AnnotatedTypeParameterBounds> paramBounds, List<? extends AnnotatedTypeMirror> typeargs, List<? extends Tree> typeargTrees) {
+        super.checkTypeArguments(toptree, paramBounds, typeargs, typeargTrees);
+
+        AnnotatedTypeMirror toptreeType = atypeFactory.getAnnotatedType(toptree);
+
+        if (toptreeType.hasAnnotation(Immutable.class)) {
+            // Make sure all the type arguments have the @Immutable annotation.
+            for (AnnotatedTypeMirror typearg : typeargs) {
+                // Ignore type variables because we only want to check concrete types.
+                if (typearg.getKind() != TypeKind.TYPEVAR && !typearg.hasAnnotation(Immutable.class)) {
+                    checker.report(Result.failure("glacier.typeparameter.mutable", toptree, typearg), toptree);
+                }
+            }
+        }
+    }
+
     /**
      * Indicates whether to skip subtype checks on the receiver when
      * checking method invocability. A visitor may, for example,

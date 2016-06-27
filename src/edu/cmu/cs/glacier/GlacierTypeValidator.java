@@ -32,8 +32,8 @@ public class GlacierTypeValidator extends BaseTypeValidator {
 		}
 		return super.areBoundsValid(upperBound, lowerBound);
     }
-    
-    
+
+
     protected void reportValidityResult(
             final /*@CompilerMessageKey*/ String errorType,
             final AnnotatedTypeMirror type, final Tree p) {
