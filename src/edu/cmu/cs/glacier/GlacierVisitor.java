@@ -91,7 +91,13 @@ public class GlacierVisitor extends BaseTypeVisitor<GlacierAnnotatedTypeFactory>
 
             // Primitive types are always immutable. Class type parameters will be checked when they are instantiated.
             if (!typeIsPrimitive && !typeIsImmutableClassTypeParameter) {
-                checker.report(Result.failure("glacier.mutable.invalid"), element);
+                // Choose the right error message according to the reason for this check.
+                if (alsoCheckFinal) {
+                    checker.report(Result.failure("glacier.mutablemember", deepestClassTree.getSimpleName(), immediateContainingElement, element), deepestClassTree);
+                }
+                else {
+                    checker.report(Result.failure("glacier.mutable.invalid"), element);
+                }
             }
         }
 
