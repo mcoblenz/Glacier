@@ -10,10 +10,23 @@ public class Arrays {
 }
 
 public class Collections {
+    // TODO: this seems wrong.
     public static <@ReadOnly T extends Comparable<? super @ReadOnly T>> void sort(List<@ReadOnly T> list);
 }
+
+
+
+public abstract class AbstractCollection<E> implements Collection<E> {
+    public abstract int size() @ReadOnly;
+}
+
+
+
 
 // TODO: Find out why these annotations don't seem to have any effect.
 package java.lang;
 @Immutable public class String {}
 @Immutable public class Number {}
+
+
+

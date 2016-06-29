@@ -343,7 +343,7 @@ public class GlacierVisitor extends BaseTypeVisitor<GlacierAnnotatedTypeFactory>
 
         AnnotatedTypeMirror toptreeType = atypeFactory.getAnnotatedType(toptree);
 
-        if (toptreeType.hasAnnotation(Immutable.class)) {
+        if (TypesUtils.isClass(toptreeType.getUnderlyingType()) && toptreeType.hasAnnotation(Immutable.class)) {
             // Make sure all the type arguments have the @Immutable annotation.
             for (AnnotatedTypeMirror typearg : typeargs) {
                 // Ignore type variables because we only want to check concrete types.
@@ -363,6 +363,7 @@ public class GlacierVisitor extends BaseTypeVisitor<GlacierAnnotatedTypeFactory>
                     }
 
                     if (reportError) {
+
                         checker.report(Result.failure("glacier.typeparameter.mutable", toptree, typearg), toptree);
 
                     }
