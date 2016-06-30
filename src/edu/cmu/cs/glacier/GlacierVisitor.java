@@ -1,10 +1,7 @@
 package edu.cmu.cs.glacier;
 
 import java.lang.annotation.Annotation;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import javax.lang.model.element.*;
 import javax.lang.model.type.DeclaredType;
@@ -14,7 +11,6 @@ import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
 
 import com.sun.source.tree.*;
-import com.sun.tools.javac.code.Type;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeParameterBounds;
 import org.checkerframework.framework.type.QualifierHierarchy;
@@ -439,8 +435,8 @@ public class GlacierVisitor extends BaseTypeVisitor<GlacierAnnotatedTypeFactory>
 
         return overrideChecker.checkOverride();
     }
-    
-    
+
+
     /**
      * Class to perform method override and method reference checks.
      *
@@ -502,12 +498,12 @@ public class GlacierVisitor extends BaseTypeVisitor<GlacierAnnotatedTypeFactory>
          *            the return type of the overridden method
          */
         GlacierOverrideChecker(Tree overriderTree,
-                AnnotatedExecutableType overrider,
-                AnnotatedTypeMirror overridingType,
-                AnnotatedTypeMirror overridingReturnType,
-                AnnotatedExecutableType overridden,
-                AnnotatedDeclaredType overriddenType,
-                AnnotatedTypeMirror overriddenReturnType) {
+                        AnnotatedExecutableType overrider,
+                        AnnotatedTypeMirror overridingType,
+                        AnnotatedTypeMirror overridingReturnType,
+                        AnnotatedExecutableType overridden,
+                        AnnotatedDeclaredType overriddenType,
+                        AnnotatedTypeMirror overriddenReturnType) {
 
             this.overriderTree = overriderTree;
             this.overrider = overrider;
@@ -579,9 +575,9 @@ public class GlacierVisitor extends BaseTypeVisitor<GlacierAnnotatedTypeFactory>
 
             // Check postconditions
             ContractsUtils contracts = ContractsUtils.getInstance(atypeFactory);
-            Set<Pair<String, String>> superPost = contracts
+            Set<ContractsUtils.PreOrPostcondition> superPost = contracts
                     .getPostconditions(overridden.getElement());
-            Set<Pair<String, String>> subPost = contracts
+            Set<ContractsUtils.PreOrPostcondition> subPost = contracts
                     .getPostconditions(overrider.getElement());
             Set<Pair<Receiver, AnnotationMirror>> superPost2 = resolveContracts(superPost, overridden);
             Set<Pair<Receiver, AnnotationMirror>> subPost2 = resolveContracts(subPost, overrider);
@@ -591,9 +587,9 @@ public class GlacierVisitor extends BaseTypeVisitor<GlacierAnnotatedTypeFactory>
                     subPost2, postmsg);
 
             // Check preconditions
-            Set<Pair<String, String>> superPre = contracts
+            Set<ContractsUtils.PreOrPostcondition> superPre = contracts
                     .getPreconditions(overridden.getElement());
-            Set<Pair<String, String>> subPre = contracts.getPreconditions(overrider
+            Set<ContractsUtils.PreOrPostcondition> subPre = contracts.getPreconditions(overrider
                     .getElement());
             Set<Pair<Receiver, AnnotationMirror>> superPre2 = resolveContracts(superPre, overridden);
             Set<Pair<Receiver, AnnotationMirror>> subPre2 = resolveContracts(subPre, overrider);
@@ -603,14 +599,14 @@ public class GlacierVisitor extends BaseTypeVisitor<GlacierAnnotatedTypeFactory>
                     premsg);
 
             // Check conditional postconditions
-            Set<Pair<String, Pair<Boolean, String>>> superCPost = contracts
+            Set<ContractsUtils.ConditionalPostcondition> superCPost = contracts
                     .getConditionalPostconditions(overridden.getElement());
-            Set<Pair<String, Pair<Boolean, String>>> subCPost = contracts
+            Set<ContractsUtils.ConditionalPostcondition> subCPost = contracts
                     .getConditionalPostconditions(overrider.getElement());
             // consider only 'true' postconditions
-            Set<Pair<String, String>> superCPostTrue = filterConditionalPostconditions(
+            Set<ContractsUtils.PreOrPostcondition> superCPostTrue = filterConditionalPostconditions(
                     superCPost, true);
-            Set<Pair<String, String>> subCPostTrue = filterConditionalPostconditions(
+            Set<ContractsUtils.PreOrPostcondition> subCPostTrue = filterConditionalPostconditions(
                     subCPost, true);
             Set<Pair<Receiver, AnnotationMirror>> superCPostTrue2 = resolveContracts(
                     superCPostTrue, overridden);
@@ -621,9 +617,10 @@ public class GlacierVisitor extends BaseTypeVisitor<GlacierAnnotatedTypeFactory>
             checkContractsSubset(overriderMeth, overriderTyp, overriddenMeth, overriddenTyp, superCPostTrue2, subCPostTrue2,
                     posttruemsg);
 
-            Set<Pair<String, String>> superCPostFalse = filterConditionalPostconditions(
+            // consider only 'false' postconditions
+            Set<ContractsUtils.PreOrPostcondition> superCPostFalse = filterConditionalPostconditions(
                     superCPost, false);
-            Set<Pair<String, String>> subCPostFalse = filterConditionalPostconditions(
+            Set<ContractsUtils.PreOrPostcondition> subCPostFalse = filterConditionalPostconditions(
                     subCPost, false);
             Set<Pair<Receiver, AnnotationMirror>> superCPostFalse2 = resolveContracts(
                     superCPostFalse, overridden);
@@ -653,9 +650,9 @@ public class GlacierVisitor extends BaseTypeVisitor<GlacierAnnotatedTypeFactory>
                 boolean success = atypeFactory.getTypeHierarchy().isSubtype(overriddenReceiver, overriderReceiver);
                 if (!success) {
                     checker.report(Result.failure("methodref.receiver.invalid",
-                                    overriderMeth, overriderTyp, overriddenMeth, overriddenTyp,
-                                    overriderReceiver,
-                                    overriddenReceiver),
+                            overriderMeth, overriderTyp, overriddenMeth, overriddenTyp,
+                            overriderReceiver,
+                            overriddenReceiver),
                             overriderTree);
                 }
                 return success;
@@ -695,9 +692,9 @@ public class GlacierVisitor extends BaseTypeVisitor<GlacierAnnotatedTypeFactory>
             boolean success = atypeFactory.getTypeHierarchy().isSubtype(receiverArg, receiverDecl);
             if (!success) {
                 checker.report(Result.failure("methodref.receiver.bound.invalid",
-                                receiverArg, overriderMeth, overriderTyp,
-                                receiverArg,
-                                receiverDecl),
+                        receiverArg, overriderMeth, overriderTyp,
+                        receiverArg,
+                        receiverDecl),
                         overriderTree);
             }
 
@@ -716,32 +713,25 @@ public class GlacierVisitor extends BaseTypeVisitor<GlacierAnnotatedTypeFactory>
             // respect to JLS, but overrider receiver is not a subtype of the
             // overridden receiver.  Hence copying the annotations.
             // TODO: this will need to be improved for generic receivers.
-        	if (TypesUtils.isObject(overriddenType.getUnderlyingType())) {
-            	// We are overriding a method on Object. Nothing to check.
-            	return true;
-            }
-            
             AnnotatedTypeMirror overriddenReceiver =
                     overrider.getReceiverType().getErased().shallowCopy(false);
             overriddenReceiver.addAnnotations(overridden.getReceiverType().getAnnotations());
             if (!atypeFactory.getTypeHierarchy().isSubtype(overriddenReceiver,
                     overrider.getReceiverType().getErased())) {
                 checker.report(Result.failure("override.receiver.invalid",
-                                overriderMeth, overriderTyp, overriddenMeth, overriddenTyp,
-                                overrider.getReceiverType(),
-                                overridden.getReceiverType()),
+                        overriderMeth, overriderTyp, overriddenMeth, overriddenTyp,
+                        overrider.getReceiverType(),
+                        overridden.getReceiverType()),
                         overriderTree);
                 return false;
             }
-
             return true;
             */
-
         }
 
         private boolean checkParameters() {
             boolean result = true;
-            // Check parameter values. (FIXME varargs)
+            // Check parameter values. (TODO: FIXME varargs)
             List<AnnotatedTypeMirror> overriderParams =
                     overrider.getParameterTypes();
             List<AnnotatedTypeMirror> overriddenParams =
@@ -780,11 +770,11 @@ public class GlacierVisitor extends BaseTypeVisitor<GlacierAnnotatedTypeFactory>
             }
             if (!success) {
                 checker.report(Result.failure(msgKey,
-                                overriderMeth, overriderTyp,
-                                overriddenMeth, overriddenTyp,
-                                overriderParams.get(index).toString(),
-                                overriddenParams.get(index).toString()),
-                                posTree);
+                        overriderMeth, overriderTyp,
+                        overriddenMeth, overriddenTyp,
+                        overriderParams.get(index).toString(),
+                        overriddenParams.get(index).toString()),
+                        posTree);
             }
         }
 
@@ -795,26 +785,26 @@ public class GlacierVisitor extends BaseTypeVisitor<GlacierAnnotatedTypeFactory>
                 final TypeHierarchy typeHierarchy = atypeFactory.getTypeHierarchy();
                 success = typeHierarchy.isSubtype(overridingReturnType, overriddenReturnType);
 
-                //If both the overridden method have type variables as return types and both types were
-                //defined in their respective methods then, they can be covariant or invariant
-                //use super/subtypes for the overrides locations
+                // If both the overridden method have type variables as return types and both types were
+                // defined in their respective methods then, they can be covariant or invariant
+                // use super/subtypes for the overrides locations
                 if (!success) {
                     success = testTypevarContainment(overridingReturnType, overriddenReturnType);
 
-                    //sometimes when using a Java 8 compiler (not JSR308) the overridden return type of a method reference
-                    //becomes a captured type.  This leads to defaulting that often makes the overriding return type
-                    //invalid.  We ignore these.  This happens in Issue403/Issue404 when running without JSR308 Langtools
+                    // sometimes when using a Java 8 compiler (not JSR308) the overridden return type of a method reference
+                    // becomes a captured type.  This leads to defaulting that often makes the overriding return type
+                    // invalid.  We ignore these.  This happens in Issue403/Issue404 when running without JSR308 Langtools
                     if (!success && methodReference) {
 
                         boolean isCaptureConverted =
                                 (overriddenReturnType.getKind() == TypeKind.TYPEVAR) &&
-                                InternalUtils.isCaptured((TypeVariable) overriddenReturnType.getUnderlyingType());
+                                        InternalUtils.isCaptured((TypeVariable) overriddenReturnType.getUnderlyingType());
 
                         if (methodReference && isCaptureConverted) {
                             ExecutableElement overridenMethod = overridden.getElement();
                             boolean isFunctionApply =
                                     overridenMethod.getSimpleName().toString().equals("apply") &&
-                                    overridenMethod.getEnclosingElement().toString().equals("java.util.function.Function");
+                                            overridenMethod.getEnclosingElement().toString().equals("java.util.function.Function");
 
                             if (isFunctionApply) {
                                 AnnotatedTypeMirror overridingUpperBound = ((AnnotatedTypeVariable) overriddenReturnType).getUpperBound();
@@ -849,33 +839,38 @@ public class GlacierVisitor extends BaseTypeVisitor<GlacierAnnotatedTypeFactory>
             }
             if (!success) {
                 checker.report(Result.failure(msgKey,
-                                overriderMeth, overriderTyp,
-                                overriddenMeth, overriddenTyp,
-                                overridingReturnType,
-                                overriddenReturnType),
-                                posTree);
+                        overriderMeth, overriderTyp,
+                        overriddenMeth, overriddenTyp,
+                        overridingReturnType,
+                        overriddenReturnType),
+                        posTree);
             }
         }
     }
-    
+
     /**
-     * MJC: tragic hack. Copied private method.
-     * Filters the set of conditional postconditions to return only those with
-     * {@code result=true}.
+     * MJC: Copied private method. Tragic hack.
+     *
+     * Filters the set of conditional postconditions to return only those whose
+     * annotation result value matches the value of the given boolean {@code b}.
+     * For example, if {@code b == true}, then the following {@code @EnsuresNonNullIf}
+     * conditional postcondition would match:<br>
+     * {@code @EnsuresNonNullIf(expression="#1", result=true)}<br>
+     * {@code boolean equals(@Nullable Object o)}
      */
-    private <T, S> Set<Pair<T, S>> filterConditionalPostconditions(
-            Set<Pair<T, Pair<Boolean, S>>> conditionalPostconditions, boolean b) {
-        Set<Pair<T, S>> result = new HashSet<>();
-        for (Pair<T, Pair<Boolean, S>> p : conditionalPostconditions) {
-            if (p.second.first == b) {
-                result.add(Pair.of(p.first, p.second.second));
+    private Set<ContractsUtils.PreOrPostcondition> filterConditionalPostconditions(
+            Set<ContractsUtils.ConditionalPostcondition> conditionalPostconditions, boolean b) {
+        Set<ContractsUtils.PreOrPostcondition> result = new LinkedHashSet<ContractsUtils.PreOrPostcondition>();
+        for (ContractsUtils.ConditionalPostcondition p : conditionalPostconditions) {
+            if (p.annoResult == b) {
+                result.add(new ContractsUtils.PreOrPostcondition(p.expression, p.annotationString));
             }
         }
         return result;
     }
 
     /**
-     * MJC: tragic hack. Copied private method.
+     * MJC: Copied private method. Tragic hack.
      * Checks that {@code mustSubset} is a subset of {@code set} in the
      * following sense: For every expression in {@code mustSubset} there must be the
      * same expression in {@code set}, with the same (or a stronger) annotation.
@@ -903,27 +898,28 @@ public class GlacierVisitor extends BaseTypeVisitor<GlacierAnnotatedTypeFactory>
                 MethodTree method = visitorState.getMethodTree();
                 checker.report(Result.failure(messageKey,
                         overriderMeth, overriderTyp, overriddenMeth, overriddenTyp,
-                         a.second, a.first), method);
+                        a.second, a.first), method);
             }
         }
     }
 
     /**
-     * MJC: tragic hack. Copied private method.
+     * MJC: Copied private method. Tragic hack.
+     *
      * Takes a set of contracts identified by their expression and annotation
      * strings and resolves them to the correct {@link Receiver} and
      * {@link AnnotationMirror}.
      */
     private Set<Pair<Receiver, AnnotationMirror>> resolveContracts(
-            Set<Pair<String, String>> contractSet, AnnotatedExecutableType method) {
+            Set<ContractsUtils.PreOrPostcondition> contractSet, AnnotatedExecutableType method) {
         Set<Pair<Receiver, AnnotationMirror>> result = new HashSet<>();
         MethodTree methodTree = visitorState.getMethodTree();
         TreePath path = atypeFactory.getPath(methodTree);
         FlowExpressionContext flowExprContext = null;
-        for (Pair<String, String> p : contractSet) {
-            String expression = p.first;
+        for (ContractsUtils.PreOrPostcondition p : contractSet) {
+            String expression = p.expression;
             AnnotationMirror annotation = AnnotationUtils.fromName(
-                    atypeFactory.getElementUtils(), p.second);
+                    atypeFactory.getElementUtils(), p.annotationString);
 
             // Only check if the postcondition concerns this checker
             if (!atypeFactory.isSupportedQualifier(annotation)) {
@@ -932,7 +928,7 @@ public class GlacierVisitor extends BaseTypeVisitor<GlacierAnnotatedTypeFactory>
             if (flowExprContext == null) {
                 flowExprContext = FlowExpressionParseUtil
                         .buildFlowExprContextForDeclaration(methodTree, method
-                                .getReceiverType().getUnderlyingType(),
+                                        .getReceiverType().getUnderlyingType(),
                                 checker.getContext());
             }
 
