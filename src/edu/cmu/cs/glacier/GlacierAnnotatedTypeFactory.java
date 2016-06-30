@@ -14,6 +14,7 @@ import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.ElementAnnotationApplier;
+import org.checkerframework.framework.type.SyntheticArrays;
 import org.checkerframework.framework.type.TypeHierarchy;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
@@ -48,7 +49,7 @@ public class GlacierAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 		READ_ONLY = AnnotationUtils.fromClass(elements, ReadOnly.class);
 		this.postInit();
 	}
-	
+
 	/*
 	 * Superclass's implementation assumes that type of "this" should be according to the annotations on the "this" parameter.
 	 * But instead, for immutability, we want the annotations to be according to the containing class.
@@ -97,8 +98,36 @@ public class GlacierAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 			return false;
 		}
 	}
-		
-	// TODO: Forbid @Immutable and @Mutable annotations on this-parameters of methods.
+
+    /**
+     * A callback method for the AnnotatedTypeFactory subtypes to customize
+     * AnnotatedTypes.asMemberOf().  Overriding methods should merely change
+     * the annotations on the subtypes, without changing the types.
+     *
+     * In this override, we make the receiver's annotations match the return type's annotations, which have already been set up correctly.
+     *
+     * @param type  the annotated type of the element
+     * @param owner the annotated type of the receiver of the accessing tree
+     * @param element   the element of the field or method
+     */
+    @Override
+    public void postAsMemberOf(AnnotatedTypeMirror type,
+                               AnnotatedTypeMirror owner, Element element) {
+        super.postAsMemberOf(type, owner, element);
+        if (SyntheticArrays.isArrayClone(owner, element)) {
+            // Why is there a special case for array clone? Ugh.
+            AnnotatedExecutableType executableType = (AnnotatedExecutableType)type;
+            AnnotatedTypeMirror receiverType = executableType.getReceiverType();
+
+            receiverType.removeAnnotationInHierarchy(READ_ONLY);
+            AnnotatedArrayType arrayReturnType = (AnnotatedArrayType)executableType.getReturnType();
+
+            receiverType.addMissingAnnotations(arrayReturnType.getAnnotations());
+        }
+    }
+
+
+    // TODO: Forbid @Immutable and @Mutable annotations on this-parameters of methods.
 	
     protected void annotateInheritedFromClass(/*@Mutable*/ AnnotatedTypeMirror type) {
     	GlacierInheritedFromClassAnnotator.INSTANCE.visit(type, this);
