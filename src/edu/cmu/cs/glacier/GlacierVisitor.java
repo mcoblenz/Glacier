@@ -333,13 +333,16 @@ public class GlacierVisitor extends BaseTypeVisitor<GlacierAnnotatedTypeFactory>
     	// For now, do nothing. There's nothing to check that isn't already expressed by Java's type system.
     }
 
-
+    // Type arguments to an immutable class must be immutable because those type arguments may be used on fields.
+    // Type arguments on methods don't need any special checking.
     protected void checkTypeArguments(Tree toptree, List<? extends AnnotatedTypeParameterBounds> paramBounds, List<? extends AnnotatedTypeMirror> typeargs, List<? extends Tree> typeargTrees) {
         super.checkTypeArguments(toptree, paramBounds, typeargs, typeargTrees);
 
         AnnotatedTypeMirror toptreeType = atypeFactory.getAnnotatedType(toptree);
 
-        if (TypesUtils.isClass(toptreeType.getUnderlyingType()) && toptreeType.hasAnnotation(Immutable.class)) {
+        if (toptreeType.hasAnnotation(Immutable.class) && (toptree.getKind() == Kind.CLASS || toptree.getKind() == Kind.PARAMETERIZED_TYPE)) {
+            // Cases for toptree: ParameterizedTypeTree; MethodInvocationTree; NewClassTree.
+            
             // Make sure all the type arguments have the @Immutable annotation.
             for (AnnotatedTypeMirror typearg : typeargs) {
                 // Ignore type variables because we only want to check concrete types.
