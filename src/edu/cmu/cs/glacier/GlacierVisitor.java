@@ -342,7 +342,7 @@ public class GlacierVisitor extends BaseTypeVisitor<GlacierAnnotatedTypeFactory>
 
         if (toptreeType.hasAnnotation(Immutable.class) && (toptree.getKind() == Kind.CLASS || toptree.getKind() == Kind.PARAMETERIZED_TYPE)) {
             // Cases for toptree: ParameterizedTypeTree; MethodInvocationTree; NewClassTree.
-            
+
             // Make sure all the type arguments have the @Immutable annotation.
             for (AnnotatedTypeMirror typearg : typeargs) {
                 // Ignore type variables because we only want to check concrete types.
@@ -929,8 +929,8 @@ public class GlacierVisitor extends BaseTypeVisitor<GlacierAnnotatedTypeFactory>
                 continue;
             }
             if (flowExprContext == null) {
-                flowExprContext = FlowExpressionParseUtil
-                        .buildFlowExprContextForDeclaration(methodTree, method
+                flowExprContext = FlowExpressionContext
+                        .buildContextForMethodDeclaration(methodTree, method
                                         .getReceiverType().getUnderlyingType(),
                                 checker.getContext());
             }
@@ -941,7 +941,7 @@ public class GlacierVisitor extends BaseTypeVisitor<GlacierAnnotatedTypeFactory>
                 // be optimized to store the result the first time.
                 // (same for other annotations)
                 FlowExpressions.Receiver expr = FlowExpressionParseUtil.parse(
-                        expression, flowExprContext, path);
+                        expression, flowExprContext, path, false);
                 result.add(Pair.of(expr, annotation));
             } catch (FlowExpressionParseException e) {
                 // errors are reported elsewhere + ignore this contract
@@ -949,4 +949,5 @@ public class GlacierVisitor extends BaseTypeVisitor<GlacierAnnotatedTypeFactory>
         }
         return result;
     }
+
 }
