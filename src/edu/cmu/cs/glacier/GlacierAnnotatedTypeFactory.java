@@ -123,6 +123,8 @@ public class GlacierAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             AnnotatedArrayType arrayReturnType = (AnnotatedArrayType)executableType.getReturnType();
 
             receiverType.addMissingAnnotations(arrayReturnType.getAnnotations());
+            arrayReturnType.removeAnnotationInHierarchy(READ_ONLY);
+            arrayReturnType.addAnnotation(GLACIER_BOTTOM);
         }
     }
 
