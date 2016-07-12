@@ -173,7 +173,7 @@
 
       <jvmarg line="-Xbootclasspath/p:${javac.lib}"/>
       <jvmarg line="${debugger.str}"/>
-      <sysproperty key="JDK_JAR" value="${basedir}/dist/${jdkName}"/>
+      <sysproperty key="JDK_JAR" value="${checker-framework.loc}/dist/jdk8.jar"/>
       <sysproperty key="emit.test.debug" value="${should.emit.debug.str}"/>
       <jvmarg line="-ea"/>
 
@@ -182,10 +182,9 @@
 	<pathelement path="${build}"/>
 	<pathelement path="${tests.build}"/>
 	<pathelement path="${javac.lib}"/>
-	<pathelement path="${hamcrest.lib}"/>
 	<pathelement path="${checker.lib}"/>
-    <pathelement path="${junit.lib}"/>
-
+	<pathelement path="${junit.lib}"/>
+	<pathelement path="${hamcrest.lib}"/>
       </classpath>
       <test name="${testclass}" todir="${build.reports}"/>
     </junit>
