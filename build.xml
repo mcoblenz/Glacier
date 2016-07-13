@@ -31,7 +31,7 @@
 	            value="${java.io.tmpdir}/${user.name}/${timestamp}${env.EXECUTOR_NUMBER}/${ant.project.name}" />
 
   <property name="build" value="bin"/>
-  <target name="build" depends=""
+  <target name="build" depends="prep"
 	  description="Compile files.  Does not update any jars">
 
     <!--
@@ -42,6 +42,16 @@
       </fileset>
     </copy>
     -->
+
+    <fileset id="astub.files" dir="src">
+      <include name="**/*.astub"/>
+    </fileset>
+
+    <echo message="stub files=${astub.files}"/>
+    <copy todir="${build}" preservelastmodified="true">
+      <fileset refid="astub.files"/>
+    </copy>
+    
     <pathconvert pathsep=" " property="src.files.spaceseparated">
       <path>
 	<fileset dir="src">
@@ -89,6 +99,7 @@
   </target>
 
   <target name="prep">
+    <mkdir dir="${build}"/>
     <mkdir dir="${tests.build}"/>
     <!-- TODO -->
   </target>
@@ -130,7 +141,7 @@
   
   </target>
   
-  <target name="-run-tests">
+  <target name="-run-tests" depends="build-tests">
       <echo message="junit: ${junit.lib}"/>
 
     <echo message="Running tests: ${testclass}"/>
