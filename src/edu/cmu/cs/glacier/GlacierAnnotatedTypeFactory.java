@@ -115,14 +115,20 @@ public class GlacierAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                                AnnotatedTypeMirror owner, Element element) {
         super.postAsMemberOf(type, owner, element);
         if (SyntheticArrays.isArrayClone(owner, element)) {
-            // Why is there a special case for array clone? Ugh.
+            // The superclass has already made the return type be the type of the owner. But
+            // this isn't quite what we want because the return type should be annotated GlacierBottom, not whatever the owner is.
+
+
+            // clone() should be:
+            // @A Object @GlacierBottom [] clone(@ReadOnly Array this)
+
             AnnotatedExecutableType executableType = (AnnotatedExecutableType)type;
+
             AnnotatedTypeMirror receiverType = executableType.getReceiverType();
-
             receiverType.removeAnnotationInHierarchy(READ_ONLY);
-            AnnotatedArrayType arrayReturnType = (AnnotatedArrayType)executableType.getReturnType();
+            receiverType.addAnnotation(READ_ONLY);
 
-            receiverType.addMissingAnnotations(arrayReturnType.getAnnotations());
+            AnnotatedArrayType arrayReturnType = (AnnotatedArrayType)executableType.getReturnType();
             arrayReturnType.removeAnnotationInHierarchy(READ_ONLY);
             arrayReturnType.addAnnotation(GLACIER_BOTTOM);
         }

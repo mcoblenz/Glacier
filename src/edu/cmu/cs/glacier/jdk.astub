@@ -7,6 +7,10 @@ public class Arrays {
     public static @Immutable int hashCode(@Immutable byte @ReadOnly [] a);
     
     public static @Immutable boolean equals(@Immutable byte @ReadOnly[] a, byte @ReadOnly[] a2);
+
+    public static <T> T @GlacierBottom[] copyOf(T @ReadOnly[] original, int newLength);
+    public static int @GlacierBottom[] copyOf(int @ReadOnly[] original, int newLength);
+
 }
 
 public class Collections {
