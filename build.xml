@@ -47,9 +47,14 @@
       <include name="**/*.astub"/>
     </fileset>
 
+    <fileset id="properties.files" dir="src">
+      <include name="**/*.properties"/>
+    </fileset>
+
     <echo message="stub files=${astub.files}"/>
     <copy todir="${build}" preservelastmodified="true">
       <fileset refid="astub.files"/>
+      <fileset refid="properties.files"/>
     </copy>
     
     <pathconvert pathsep=" " property="src.files.spaceseparated">
