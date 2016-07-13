@@ -1,5 +1,9 @@
 package edu.cmu.cs.glacier;
 
+/*>>>
+import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
+*/
+
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeValidator;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
