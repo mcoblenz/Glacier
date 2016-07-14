@@ -3,7 +3,7 @@ import edu.cmu.cs.glacier.qual.*;
 @Immutable class ImmutClass {
 }
 
-@Mutable class MutableClass {
+@MaybeMutable class MutableClass {
 }
 
 class DefaultMutableClass {
@@ -17,7 +17,7 @@ interface MutableInterface {
 
 public class ConflictingAnnotations {
     //::error: (type.invalid)
-    @Mutable ImmutClass o1;
+    @MaybeMutable ImmutClass o1;
 
     //::error: (type.invalid)
     @Immutable MutableClass o2;
@@ -26,7 +26,7 @@ public class ConflictingAnnotations {
     @Immutable DefaultMutableClass o3;
 
     //::error: (type.invalid)
-    @Mutable ImmutInterface i1;
+    @MaybeMutable ImmutInterface i1;
 
     //::error: (type.invalid)
     @Immutable MutableInterface i2;

@@ -9,7 +9,7 @@ import edu.cmu.cs.glacier.qual.Immutable;
     //::error: (glacier.mutable.invalid)
     private java.util.Date @Immutable [] _dates;
 
-    // Mutable array of primitives is mutable.
+    // MaybeMutable array of primitives is mutable.
     //::error: (glacier.mutable.invalid)
     private int [] _ints;
 }

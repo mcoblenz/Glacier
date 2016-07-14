@@ -9,7 +9,7 @@ import org.checkerframework.framework.qual.LiteralKind;
 import org.checkerframework.framework.qual.SubtypeOf;
 import org.checkerframework.framework.qual.TypeUseLocation;
 
-@SubtypeOf({Immutable.class, Mutable.class})
+@SubtypeOf({Immutable.class, MaybeMutable.class})
 @ImplicitFor(literals = {LiteralKind.NULL})
 @DefaultFor({TypeUseLocation.LOWER_BOUND})
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})

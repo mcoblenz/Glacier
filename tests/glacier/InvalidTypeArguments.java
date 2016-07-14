@@ -3,7 +3,7 @@ import java.util.Collections;
 import java.util.Iterator;
 
 import edu.cmu.cs.glacier.qual.Immutable;
-import edu.cmu.cs.glacier.qual.Mutable;
+import edu.cmu.cs.glacier.qual.MaybeMutable;
 
 public class InvalidTypeArguments {
     interface MutableObject {}
@@ -18,7 +18,7 @@ public class InvalidTypeArguments {
     ImmutableGeneric<MutableObject> mutableObjectImmutableGeneric;
     ImmutableGeneric<ImmutableObject> immutableObjectImmutableGeneric;
 
-    class MutableGeneric<@Mutable T>{}
+    class MutableGeneric<@MaybeMutable T>{}
     MutableGeneric<MutableObject> mutableObjectMutableGeneric;
     //:: error: (type.argument.type.incompatible)
     MutableGeneric<ImmutableObject> immutableObjectMutableGeneric;

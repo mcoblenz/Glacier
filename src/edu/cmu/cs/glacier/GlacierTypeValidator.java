@@ -31,7 +31,7 @@ public class GlacierTypeValidator extends BaseTypeValidator {
 	@Override
     public boolean areBoundsValid(final AnnotatedTypeMirror upperBound, final AnnotatedTypeMirror lowerBound) {
 		if (TypesUtils.isObject(upperBound.getUnderlyingType()) && !upperBound.hasAnnotation(Immutable.class)) {
-			// If the upper bound is Object, it'll default to Mutable, in which case an Immutable lower bound is acceptable.
+			// If the upper bound is Object, it'll default to MaybeMutable, in which case an Immutable lower bound is acceptable.
 			return true;
 		}
 		return super.areBoundsValid(upperBound, lowerBound);

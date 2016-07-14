@@ -10,4 +10,4 @@ import org.checkerframework.framework.qual.*;
 @DefaultQualifierInHierarchy
 @DefaultFor({TypeUseLocation.RESOURCE_VARIABLE, TypeUseLocation.LOCAL_VARIABLE, TypeUseLocation.EXCEPTION_PARAMETER,
     TypeUseLocation.IMPLICIT_UPPER_BOUND })
-public @interface Mutable { }
+public @interface MaybeMutable { }

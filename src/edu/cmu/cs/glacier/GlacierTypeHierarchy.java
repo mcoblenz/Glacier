@@ -5,6 +5,7 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 
+import edu.cmu.cs.glacier.qual.MaybeMutable;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.DefaultTypeHierarchy;
@@ -12,7 +13,6 @@ import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.javacutil.TypesUtils;
 
 import edu.cmu.cs.glacier.qual.Immutable;
-import edu.cmu.cs.glacier.qual.Mutable;
 
 public class GlacierTypeHierarchy extends DefaultTypeHierarchy {
 	
@@ -44,7 +44,7 @@ public class GlacierTypeHierarchy extends DefaultTypeHierarchy {
 		if (supertype.getUnderlyingType().getKind() == TypeKind.DECLARED && subtype.getUnderlyingType().getKind() == TypeKind.DECLARED) {
 			DeclaredType declaredSupertype = (DeclaredType)(supertype.getUnderlyingType());
 			Element supertypeElement = declaredSupertype.asElement();
-			if (subtype.hasAnnotation(Immutable.class) && supertype.hasAnnotation(Mutable.class) &&
+			if (subtype.hasAnnotation(Immutable.class) && supertype.hasAnnotation(MaybeMutable.class) &&
 					supertypeElement.getKind() == ElementKind.INTERFACE) {
 				// Do we need to check to make sure the subtype implements the supertype's interface?
 				return true;

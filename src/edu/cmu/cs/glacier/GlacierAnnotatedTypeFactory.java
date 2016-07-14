@@ -38,12 +38,12 @@ import edu.cmu.cs.glacier.qual.*;
 
 
 public class GlacierAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
-	protected final AnnotationMirror MUTABLE, IMMUTABLE, GLACIER_BOTTOM, READ_ONLY;
+	protected final AnnotationMirror MAYBE_MUTABLE, IMMUTABLE, GLACIER_BOTTOM, READ_ONLY;
 
 	public GlacierAnnotatedTypeFactory(BaseTypeChecker checker) {
 		super(checker, false); // Must disable flow analysis for correct behavior in Glacier.
 		
-		MUTABLE = AnnotationUtils.fromClass(elements, Mutable.class);
+		MAYBE_MUTABLE = AnnotationUtils.fromClass(elements, MaybeMutable.class);
 		IMMUTABLE = AnnotationUtils.fromClass(elements, Immutable.class);
 		GLACIER_BOTTOM = AnnotationUtils.fromClass(elements, GlacierBottom.class);
 		READ_ONLY = AnnotationUtils.fromClass(elements, ReadOnly.class);
@@ -67,12 +67,12 @@ public class GlacierAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
         AnnotatedDeclaredType enclosingClassType = getAnnotatedType(enclosingClass);
 
-        if (!selfType.isAnnotatedInHierarchy(READ_ONLY)) { // If there's already an annotation on selfType and it conflicts with Mutable, that error will be found by the type validity check elsewhere.
+        if (!selfType.isAnnotatedInHierarchy(READ_ONLY)) { // If there's already an annotation on selfType and it conflicts with MaybeMutable, that error will be found by the type validity check elsewhere.
         	if (enclosingClassType.isAnnotatedInHierarchy(READ_ONLY)) {
         		annotateInheritedFromClass(selfType, enclosingClassType.getAnnotations());
         	}
         	else {
-        		selfType.addAnnotation(MUTABLE);
+        		selfType.addAnnotation(MAYBE_MUTABLE);
         	}
         }
         return selfType;
@@ -135,9 +135,9 @@ public class GlacierAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
 
-    // TODO: Forbid @Immutable and @Mutable annotations on this-parameters of methods.
+    // TODO: Forbid @Immutable and @MaybeMutable annotations on this-parameters of methods.
 	
-    protected void annotateInheritedFromClass(/*@Mutable*/ AnnotatedTypeMirror type) {
+    protected void annotateInheritedFromClass(/*@MaybeMutable*/ AnnotatedTypeMirror type) {
     	GlacierInheritedFromClassAnnotator.INSTANCE.visit(type, this);
     }
     
@@ -146,7 +146,7 @@ public class GlacierAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * 
      * Ugh. This should not be here, but is due to visibility limitations.
      */
-    protected void annotateInheritedFromClass(/*@Mutable*/ AnnotatedTypeMirror type,
+    protected void annotateInheritedFromClass(/*@MaybeMutable*/ AnnotatedTypeMirror type,
             Set<AnnotationMirror> fromClass) {
         type.addMissingAnnotations(fromClass);
     }
@@ -214,9 +214,9 @@ public class GlacierAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 else {
                 	AnnotatedTypeMirror classType = p.fromElement(classElt);
                 	assert classType != null : "Unexpected null type for class element: " + classElt;
-                	// If the class type has no annotations, infer @Mutable.
+                	// If the class type has no annotations, infer @MaybeMutable.
                 	if (!classType.isAnnotatedInHierarchy(p.READ_ONLY) && !type.isAnnotatedInHierarchy(p.READ_ONLY)) {
-                		type.addAnnotation(Mutable.class);
+                		type.addAnnotation(MaybeMutable.class);
                 	}
                 	else {
                 		p.annotateInheritedFromClass(type, classType.getAnnotations());
@@ -284,7 +284,7 @@ public class GlacierAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         public Void visitArray(AnnotatedArrayType type, GlacierAnnotatedTypeFactory p) {
 			// Arrays default to mutable.
 			if (!type.isAnnotatedInHierarchy(p.READ_ONLY)) {
-				type.addAnnotation(Mutable.class);
+				type.addAnnotation(MaybeMutable.class);
 			}
 			        	
         	Void r = scan(type.getComponentType(), p);

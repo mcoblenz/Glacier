@@ -243,7 +243,7 @@ public class GlacierVisitor extends BaseTypeVisitor<GlacierAnnotatedTypeFactory>
 				AnnotationMirror ownerAnnotationMirror = ownerType.getAnnotationInHierarchy(atypeFactory.READ_ONLY);
 
 				if ((!methodIsConstructor || !classOwnsAssignedField) && 
-					!atypeFactory.getQualifierHierarchy().isSubtype(ownerAnnotationMirror, atypeFactory.MUTABLE)) {
+					!atypeFactory.getQualifierHierarchy().isSubtype(ownerAnnotationMirror, atypeFactory.MAYBE_MUTABLE)) {
 					checker.report(Result.failure("glacier.assignment"), node);
 				}
 			}
@@ -253,7 +253,7 @@ public class GlacierVisitor extends BaseTypeVisitor<GlacierAnnotatedTypeFactory>
 			
 			AnnotatedTypeMirror arrayType = atypeFactory.getAnnotatedType(arrayAccessTree.getExpression());
 			AnnotationMirror arrayTypeAnnotation = arrayType.getAnnotationInHierarchy(atypeFactory.READ_ONLY);
-			if (!atypeFactory.getQualifierHierarchy().isSubtype(arrayTypeAnnotation, atypeFactory.MUTABLE)) {
+			if (!atypeFactory.getQualifierHierarchy().isSubtype(arrayTypeAnnotation, atypeFactory.MAYBE_MUTABLE)) {
 				checker.report(Result.failure("glacier.assignment.array"), node);
 			}
 		}
