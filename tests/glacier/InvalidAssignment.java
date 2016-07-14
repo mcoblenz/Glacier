@@ -35,3 +35,12 @@ public @Immutable class InvalidAssignment {
 		this.i.i = i; // No error here; the problem is that this.i was mutable in the first place.
 	}
 }
+
+class AnotherClass {
+    void aMethod() {
+	InvalidAssignment i = new InvalidAssignment();
+    
+	//::error: (glacier.assignment)
+	i.s = "hello";
+    }
+}

@@ -239,10 +239,14 @@ public class GlacierVisitor extends BaseTypeVisitor<GlacierAnnotatedTypeFactory>
 
 				AnnotatedDeclaredType classType = visitorState.getClassType();
 
+                // Even in constructors, you can't assign to fields of OTHER classes.
 				boolean classOwnsAssignedField = ownerType.getUnderlyingType().equals(classType.getUnderlyingType()); 
 				AnnotationMirror ownerAnnotationMirror = ownerType.getAnnotationInHierarchy(atypeFactory.READ_ONLY);
 
-				if ((!methodIsConstructor || !classOwnsAssignedField) && 
+                Element fieldElement = TreeUtils.elementFromUse(variable);
+                boolean fieldIsStatic = ElementUtils.isStatic(fieldElement);
+
+				if ((!methodIsConstructor || !classOwnsAssignedField || fieldIsStatic) &&
 					!atypeFactory.getQualifierHierarchy().isSubtype(ownerAnnotationMirror, atypeFactory.MAYBE_MUTABLE)) {
 					checker.report(Result.failure("glacier.assignment"), node);
 				}
