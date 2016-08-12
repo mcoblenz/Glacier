@@ -8,6 +8,8 @@ import java.lang.String;
 
 class ReadOnlyMethodClass {
     @ReadOnly ReadOnlyClass roc;
+
+    int @ReadOnly [] readOnlyIntArray;
     
     //::error: (type.invalid)
     void takeReadOnlyString(@ReadOnly String foo) {}
