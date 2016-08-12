@@ -1,0 +1,6 @@
+{
+  "name": "Glacier",
+  "tagline": "Glacier is a type annotation extension to Java that enforces transitive class immutability.",
+  "body": "### Glacier helps keep your immutable data immutable.\r\n\r\n### Replication package\r\n[Replication Package](https://raw.githubusercontent.com/mcoblenz/Glacier/master/ReplicationPackage.zip)",
+  "note": "Don't delete this file! It's used internally to help with page regeneration."
+}
