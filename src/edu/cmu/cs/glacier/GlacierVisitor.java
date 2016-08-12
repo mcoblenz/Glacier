@@ -9,6 +9,7 @@ import java.util.*;
 
 import javax.lang.model.element.*;
 import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.PrimitiveType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
@@ -111,7 +112,18 @@ public class GlacierVisitor extends BaseTypeVisitor<GlacierAnnotatedTypeFactory>
             if (alsoCheckFinal) {
                 checker.report(Result.failure("glacier.mutablemember", deepestClassTree.getSimpleName(), immediateContainingElement, element), deepestClassTree);
             } else {
-                checker.report(Result.failure("glacier.mutable.invalid"), element);
+                if (fieldType.getUnderlyingType().getKind() == TypeKind.ARRAY) {
+                    AnnotatedArrayType arrayType = (AnnotatedArrayType)fieldType;
+                    if (!arrayType.hasAnnotation(Immutable.class)) {
+                        checker.report(Result.failure("glacier.mutable.wholearray.invalid"), element);
+                    }
+                    else {
+                        checker.report(Result.failure("glacier.mutable.array.invalid"), element);
+                    }
+                }
+                else {
+                    checker.report(Result.failure("glacier.mutable.invalid"), element);
+                }
             }
         }
 
