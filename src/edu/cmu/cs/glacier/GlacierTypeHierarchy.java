@@ -30,8 +30,8 @@ public class GlacierTypeHierarchy extends DefaultTypeHierarchy {
     @Override
     protected boolean isPrimarySubtype(AnnotatedTypeMirror subtype, AnnotatedTypeMirror supertype,
                                        boolean annosCanBeEmpty) {
-		if (TypesUtils.isObject(supertype.getUnderlyingType())){
-			// Everything is a subtype of Object, regardless of annotations.
+		if (TypesUtils.isObject(supertype.getUnderlyingType()) && supertype.hasAnnotation(MaybeMutable.class)){
+			// Everything is a subtype of @MaybeMutable Object, regardless of annotations.
 			return true;
 		}
 

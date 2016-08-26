@@ -329,8 +329,8 @@ public class GlacierVisitor extends BaseTypeVisitor<GlacierAnnotatedTypeFactory>
     	// It's okay to assign from an immutable class to an variable of type Object,
     	// even if the variable is mutable.
     	
-    	if (TypesUtils.isObject(varType.getUnderlyingType())) {
-    		// We're assigning to something of type Object, so its annotations don't matter.
+    	if (TypesUtils.isObject(varType.getUnderlyingType()) && varType.hasAnnotation(MaybeMutable.class)) {
+    		// We're assigning to something of type @MaybeMutable Object, so its annotations don't matter.
     		// No other checks to do.
     	}
     	else {

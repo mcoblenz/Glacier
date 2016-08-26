@@ -13,7 +13,7 @@ class Array {
 
 
 public class ArrayParameter {
-    final @Immutable Object @Immutable [] keys = new Object @Immutable [0];
+    final @Immutable Object @Immutable [] keys = new @Immutable Object @Immutable [0];
     
 
     public void passArray(@Immutable Object k) {
