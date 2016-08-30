@@ -34,15 +34,6 @@
   <target name="build" depends="prep"
 	  description="Compile files.  Does not update any jars">
 
-    <!--
-    <copy todir="${build}" preservelastmodified="true">
-      <fileset>
-	<include name="src/**/*.java"/>
-	<exclude name="src/**/package-info.java"/>
-      </fileset>
-    </copy>
-    -->
-
     <fileset id="astub.files" dir="src">
       <include name="**/*.astub"/>
     </fileset>
