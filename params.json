@@ -1,6 +1,0 @@
-{
-  "name": "Glacier",
-  "tagline": "Glacier is a type annotation extension to Java that enforces transitive class immutability.",
-  "body": "### Glacier helps keep your immutable data immutable.\r\n\r\n### Replication package\r\nGlacier has been shown to help users express and enforce immutability, preventing bugs. If you want to replicate the study, you can use the same materials we did. You'll need to install IntelliJ (we used IntelliJ IDEA Community 2016.2) and JDK 1.8 separately. [Replication Package](https://raw.githubusercontent.com/mcoblenz/Glacier/master/ReplicationPackage.zip)\r\n",
-  "note": "Don't delete this file! It's used internally to help with page regeneration."
-}
