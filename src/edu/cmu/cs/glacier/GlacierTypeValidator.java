@@ -46,7 +46,7 @@ public class GlacierTypeValidator extends BaseTypeValidator {
         isValid = false;
     }
     
-    
+
     @Override
     public Void visitDeclared(AnnotatedDeclaredType type, Tree tree) {
     	if (type.hasAnnotation(GlacierBottom.class)) {

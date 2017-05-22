@@ -155,7 +155,7 @@ public class GlacierAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     @Override
     protected TypeHierarchy createTypeHierarchy() {
         return new GlacierTypeHierarchy(checker, getQualifierHierarchy(),
-                                        checker.hasOption("ignoreRawTypeArguments"),
+                                        true, // For now, due to https://github.com/typetools/checker-framework/issues/635
                                         checker.hasOption("invariantArrays"));
     }
     
