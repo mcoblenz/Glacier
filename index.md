@@ -7,11 +7,21 @@ Glacier enforces transitive class immutability in Java.
 * Immutability: state in an object is not changable through any reference to the object.
 
 ### How do I use Glacier? ###
-Using Glacier is easy:
-1. Install Glacier.
-2. Add the Glacier checker to your build configuration.
-3. Annotate your code.
-4. Build.
+Using Glacier is easy (note that you will need to wait until after Checker Framework 2.1.12 is released):
+1. Add the Glacier Maven repository to your list of repositories: http://www.cs.cmu.edu/~mcoblenz/maven2
+2. Add a dependency on Glacier. The component is edu.cmu.cs.glacier:glacier:0.1.
+3. Add the Glacier annotation processor to your build configuration (edu.cmu.cs.glacier.GlacierChecker).
+4. Annotate your immutable classes with `@Immutable`. You will need to import edu.cmu.cs.glacier.qual.Immutable.
+5. Build.
+
+For example, here is a simple bogus class that you can use for testing. If everything is working, Glacier will report an error:
+~~~~
+import edu.cmu.cs.glacier.qual.*;
+
+@Immutable public class BogusImmutable {
+    java.util.Date d;
+}
+~~~~
 
 ### Publications
 Glacier has been shown to help users express and enforce immutability, preventing bugs. Please take a look at our paper:
