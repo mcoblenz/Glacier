@@ -27,7 +27,6 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVari
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedUnionType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
 import org.checkerframework.framework.type.visitor.AnnotatedTypeScanner;
-import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.TreeUtils;
 
@@ -44,10 +43,10 @@ public class GlacierAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 	public GlacierAnnotatedTypeFactory(BaseTypeChecker checker) {
 		super(checker, false); // Must disable flow analysis for correct behavior in Glacier.
 		
-		MAYBE_MUTABLE = AnnotationBuilder.fromClass(elements, MaybeMutable.class);
-		IMMUTABLE = AnnotationBuilder.fromClass(elements, Immutable.class);
-		GLACIER_BOTTOM = AnnotationBuilder.fromClass(elements, GlacierBottom.class);
-		READ_ONLY = AnnotationBuilder.fromClass(elements, ReadOnly.class);
+		MAYBE_MUTABLE = AnnotationUtils.fromClass(elements, MaybeMutable.class);
+		IMMUTABLE = AnnotationUtils.fromClass(elements, Immutable.class);
+		GLACIER_BOTTOM = AnnotationUtils.fromClass(elements, GlacierBottom.class);
+		READ_ONLY = AnnotationUtils.fromClass(elements, ReadOnly.class);
 		this.postInit();
 	}
 
