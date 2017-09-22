@@ -1,169 +1,34 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <module type="JAVA_MODULE" version="4">
-  <component name="EclipseModuleManager">
-    <varelement var="file://$CHECKER_FRAMEWORK$/checker/dist/checker.jar" value="CHECKER_FRAMEWORK/checker/dist/checker.jar" />
-    <varelement var="file://$CHECKER_FRAMEWORK$/checker/dist/javac.jar" value="CHECKER_FRAMEWORK/checker/dist/javac.jar" />
-    <src_description expected_position="3">
-      <src_folder value="file://$MODULE_DIR$/src" expected_position="0" />
-      <src_folder value="file://$MODULE_DIR$/.apt_generated" expected_position="4" />
-    </src_description>
-  </component>
-  <component name="NewModuleRootManager" LANGUAGE_LEVEL="JDK_1_8" inherit-compiler-output="false">
-    <output url="file://$MODULE_DIR$/bin" />
+  <component name="NewModuleRootManager" inherit-compiler-output="true">
     <exclude-output />
     <content url="file://$MODULE_DIR$">
       <sourceFolder url="file://$MODULE_DIR$/src" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/.apt_generated" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/tests/src" isTestSource="true" />
-      <excludeFolder url="file://$MODULE_DIR$/.apt_generated" />
     </content>
-    <orderEntry type="jdk" jdkName="1.8.0_92" jdkType="JavaSDK" />
-    <orderEntry type="module-library">
-      <library name="checker.jar">
+    <orderEntry type="inheritedJdk" />
+    <orderEntry type="sourceFolder" forTests="false" />
+    <orderEntry type="module-library" exported="">
+      <library>
         <CLASSES>
-          <root url="file://$CHECKER_FRAMEWORK$/checker/dist/checker.jar" />
-          <root url="file://$CHECKER_FRAMEWORK$/checker/dist" />
-        </CLASSES>
-        <JAVADOC />
-        <SOURCES>
-          <root url="file://$CHECKER_FRAMEWORK$/checker/examples" />
-          <root url="file://$CHECKER_FRAMEWORK$/checker/examples/GradleExamples/GradleJava7Example/src/main/java" />
-          <root url="file://$CHECKER_FRAMEWORK$/checker/examples/GradleExamples/GradleJava8Example/src/main/java" />
-          <root url="file://$CHECKER_FRAMEWORK$/checker/examples/MavenExample/src/main/java" />
-          <root url="file://$CHECKER_FRAMEWORK$/checker/examples/fenum-extension" />
-          <root url="file://$CHECKER_FRAMEWORK$/checker/examples/subtyping-extension" />
-          <root url="file://$CHECKER_FRAMEWORK$/checker/examples/units-extension" />
-          <root url="file://$CHECKER_FRAMEWORK$/checker/jdk/lock/src" />
-          <root url="file://$CHECKER_FRAMEWORK$/checker/jdk/nullness/src" />
-          <root url="file://$CHECKER_FRAMEWORK$/checker/jtreg" />
-          <root url="file://$CHECKER_FRAMEWORK$/checker/jtreg/multiplecheckers" />
-          <root url="file://$CHECKER_FRAMEWORK$/checker/jtreg/multipleexecutions" />
-          <root url="file://$CHECKER_FRAMEWORK$/checker/jtreg/nullness" />
-          <root url="file://$CHECKER_FRAMEWORK$/checker/jtreg/nullness/issue12" />
-          <root url="file://$CHECKER_FRAMEWORK$/checker/jtreg/nullness/issue141" />
-          <root url="file://$CHECKER_FRAMEWORK$/checker/jtreg/nullness/issue257" />
-          <root url="file://$CHECKER_FRAMEWORK$/checker/jtreg/nullness/issue380" />
-          <root url="file://$CHECKER_FRAMEWORK$/checker/jtreg/rawtypes" />
-          <root url="file://$CHECKER_FRAMEWORK$/checker/jtreg/stubs/sample" />
-          <root url="file://$CHECKER_FRAMEWORK$/checker/src" />
-          <root url="file://$CHECKER_FRAMEWORK$/checker/tests/aggregate" />
-          <root url="file://$CHECKER_FRAMEWORK$/checker/tests/all-systems" />
-          <root url="file://$CHECKER_FRAMEWORK$/checker/tests/all-systems/java8" />
-          <root url="file://$CHECKER_FRAMEWORK$/checker/tests/all-systems/java8/lambda" />
-          <root url="file://$CHECKER_FRAMEWORK$/checker/tests/all-systems/java8/memberref" />
-          <root url="file://$CHECKER_FRAMEWORK$/checker/tests/command-line/issue618" />
-          <root url="file://$CHECKER_FRAMEWORK$/checker/tests/compilermsg" />
-          <root url="file://$CHECKER_FRAMEWORK$/checker/tests/fenum" />
-          <root url="file://$CHECKER_FRAMEWORK$/checker/tests/fenum-extension" />
-          <root url="file://$CHECKER_FRAMEWORK$/checker/tests/fenumswing" />
-          <root url="file://$CHECKER_FRAMEWORK$/checker/tests/formatter" />
-          <root url="file://$CHECKER_FRAMEWORK$/checker/tests/formatter-glb" />
-          <root url="file://$CHECKER_FRAMEWORK$/checker/tests/guieffect" />
-          <root url="file://$CHECKER_FRAMEWORK$/checker/tests/i18n" />
-          <root url="file://$CHECKER_FRAMEWORK$/checker/tests/i18n-formatter" />
-          <root url="file://$CHECKER_FRAMEWORK$/checker/tests/i18n-formatter-glb" />
-          <root url="file://$CHECKER_FRAMEWORK$/checker/tests/initialization/fbc" />
-          <root url="file://$CHECKER_FRAMEWORK$/checker/tests/interning" />
-          <root url="file://$CHECKER_FRAMEWORK$/checker/tests/lock" />
-          <root url="file://$CHECKER_FRAMEWORK$/checker/tests/lock-safedefaults" />
-          <root url="file://$CHECKER_FRAMEWORK$/checker/tests/nullness" />
-          <root url="file://$CHECKER_FRAMEWORK$/checker/tests/nullness-asserts" />
-          <root url="file://$CHECKER_FRAMEWORK$/checker/tests/nullness-assumeassertions" />
-          <root url="file://$CHECKER_FRAMEWORK$/checker/tests/nullness-concurrent-semantics" />
-          <root url="file://$CHECKER_FRAMEWORK$/checker/tests/nullness-extra" />
-          <root url="file://$CHECKER_FRAMEWORK$/checker/tests/nullness-extra/compat" />
-          <root url="file://$CHECKER_FRAMEWORK$/checker/tests/nullness-extra/issue265" />
-          <root url="file://$CHECKER_FRAMEWORK$/checker/tests/nullness-extra/issue309" />
-          <root url="file://$CHECKER_FRAMEWORK$/checker/tests/nullness-extra/issue348" />
-          <root url="file://$CHECKER_FRAMEWORK$/checker/tests/nullness-extra/issue502" />
-          <root url="file://$CHECKER_FRAMEWORK$/checker/tests/nullness-extra/issue559" />
-          <root url="file://$CHECKER_FRAMEWORK$/checker/tests/nullness-extra/issue594" />
-          <root url="file://$CHECKER_FRAMEWORK$/checker/tests/nullness-extra/issue607" />
-          <root url="file://$CHECKER_FRAMEWORK$/checker/tests/nullness-extra/package-anno" />
-          <root url="file://$CHECKER_FRAMEWORK$/checker/tests/nullness-genericwildcard" />
-          <root url="file://$CHECKER_FRAMEWORK$/checker/tests/nullness-genericwildcardlib" />
-          <root url="file://$CHECKER_FRAMEWORK$/checker/tests/nullness-invariantarrays" />
-          <root url="file://$CHECKER_FRAMEWORK$/checker/tests/nullness-reflection" />
-          <root url="file://$CHECKER_FRAMEWORK$/checker/tests/nullness-safedefaultsbytecode" />
-          <root url="file://$CHECKER_FRAMEWORK$/checker/tests/nullness-safedefaultssourcecode" />
-          <root url="file://$CHECKER_FRAMEWORK$/checker/tests/nullness-safedefaultssourcecodelib" />
-          <root url="file://$CHECKER_FRAMEWORK$/checker/tests/nullness-skipdefs" />
-          <root url="file://$CHECKER_FRAMEWORK$/checker/tests/nullness-skipuses" />
-          <root url="file://$CHECKER_FRAMEWORK$/checker/tests/nullness-stubfile" />
-          <root url="file://$CHECKER_FRAMEWORK$/checker/tests/nullness/flow" />
-          <root url="file://$CHECKER_FRAMEWORK$/checker/tests/nullness/generics" />
-          <root url="file://$CHECKER_FRAMEWORK$/checker/tests/nullness/init" />
-          <root url="file://$CHECKER_FRAMEWORK$/checker/tests/nullness/java8" />
-          <root url="file://$CHECKER_FRAMEWORK$/checker/tests/nullness/java8/lambda" />
-          <root url="file://$CHECKER_FRAMEWORK$/checker/tests/nullness/java8/methodref" />
-          <root url="file://$CHECKER_FRAMEWORK$/checker/tests/nullness/rawness" />
-          <root url="file://$CHECKER_FRAMEWORK$/checker/tests/regex" />
-          <root url="file://$CHECKER_FRAMEWORK$/checker/tests/regex_poly" />
-          <root url="file://$CHECKER_FRAMEWORK$/checker/tests/regex_qual_poly" />
-          <root url="file://$CHECKER_FRAMEWORK$/checker/tests/signature" />
-          <root url="file://$CHECKER_FRAMEWORK$/checker/tests/src" />
-          <root url="file://$CHECKER_FRAMEWORK$/checker/tests/subtyping-extension" />
-          <root url="file://$CHECKER_FRAMEWORK$/checker/tests/tainting_classic" />
-          <root url="file://$CHECKER_FRAMEWORK$/checker/tests/tainting_qual" />
-          <root url="file://$CHECKER_FRAMEWORK$/checker/tests/tainting_qual_poly" />
-          <root url="file://$CHECKER_FRAMEWORK$/checker/tests/units" />
-          <root url="file://$CHECKER_FRAMEWORK$/checker/tests/units-extension" />
-          <root url="file://$CHECKER_FRAMEWORK$/dataflow/manual/examples" />
-          <root url="file://$CHECKER_FRAMEWORK$/dataflow/src" />
-          <root url="file://$CHECKER_FRAMEWORK$/eclipse/checker-framework-eclipse-plugin/src" />
-          <root url="file://$CHECKER_FRAMEWORK$/framework/jtreg" />
-          <root url="file://$CHECKER_FRAMEWORK$/framework/src" />
-          <root url="file://$CHECKER_FRAMEWORK$/framework/tests" />
-          <root url="file://$CHECKER_FRAMEWORK$/framework/tests/aggregate" />
-          <root url="file://$CHECKER_FRAMEWORK$/framework/tests/aliasing" />
-          <root url="file://$CHECKER_FRAMEWORK$/framework/tests/classval" />
-          <root url="file://$CHECKER_FRAMEWORK$/framework/tests/flow" />
-          <root url="file://$CHECKER_FRAMEWORK$/framework/tests/flow2" />
-          <root url="file://$CHECKER_FRAMEWORK$/framework/tests/framework" />
-          <root url="file://$CHECKER_FRAMEWORK$/framework/tests/lubglb" />
-          <root url="file://$CHECKER_FRAMEWORK$/framework/tests/methodval" />
-          <root url="file://$CHECKER_FRAMEWORK$/framework/tests/polyall" />
-          <root url="file://$CHECKER_FRAMEWORK$/framework/tests/report" />
-          <root url="file://$CHECKER_FRAMEWORK$/framework/tests/src" />
-          <root url="file://$CHECKER_FRAMEWORK$/framework/tests/subtyping" />
-          <root url="file://$CHECKER_FRAMEWORK$/framework/tests/value" />
-          <root url="file://$CHECKER_FRAMEWORK$/javacutil/src" />
-          <root url="file://$CHECKER_FRAMEWORK$/maven-plugin/src/main/java" />
-          <root url="file://$CHECKER_FRAMEWORK$/stubparser/src" />
-          <root url="file://$CHECKER_FRAMEWORK$/tutorial/eclipse-projects/checker-framework-tutorial/src" />
-          <root url="file://$CHECKER_FRAMEWORK$/tutorial/eclipse-projects/encryption-checker/src" />
-          <root url="file://$CHECKER_FRAMEWORK$/tutorial/eclipse-projects/personalblog-demo/src" />
-        </SOURCES>
-        <jarDirectory url="file://$CHECKER_FRAMEWORK$/checker/dist" recursive="false" />
-      </library>
-    </orderEntry>
-    <orderEntry type="module-library">
-      <library name="javac.jar">
-        <CLASSES>
-          <root url="file://$CHECKER_FRAMEWORK$/checker/dist/javac.jar" />
+          <root url="jar://$USER_HOME$/jsr308/checker-framework/framework/dist/framework.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />
       </library>
     </orderEntry>
-    <orderEntry type="sourceFolder" forTests="false" />
-    <orderEntry type="module-library">
+    <orderEntry type="module-library" exported="">
       <library>
         <CLASSES>
-          <root url="jar://$CHECKER_FRAMEWORK$/framework/dist/framework.jar!/" />
+          <root url="jar://$USER_HOME$/jsr308/checker-framework/checker/dist/checker.jar!/" />
         </CLASSES>
         <JAVADOC />
-        <SOURCES>
-          <root url="jar://$CHECKER_FRAMEWORK$/framework/dist/framework.jar!/" />
-          <root url="jar://$CHECKER_FRAMEWORK$/framework/dist/framework.jar!/" />
-          <root url="jar://$CHECKER_FRAMEWORK$/framework/dist/framework.jar!/" />
-        </SOURCES>
+        <SOURCES />
       </library>
     </orderEntry>
-    <orderEntry type="module-library">
+    <orderEntry type="module-library" exported="">
       <library>
         <CLASSES>
-          <root url="jar://$CHECKER_FRAMEWORK$/framework/tests/junit-4.12.jar!/" />
+          <root url="jar://$USER_HOME$/jsr308/checker-framework/checker/dist/javac.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />
