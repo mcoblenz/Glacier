@@ -309,7 +309,7 @@ public class GlacierVisitor extends BaseTypeVisitor<GlacierAnnotatedTypeFactory>
 
         // We need to make sure that users never apply annotations that conflict with the ones in the declarations. 
         // Check that directly rather than calling super.isValidUse().
-        AnnotationMirror immutableAnnotation = AnnotationUtils.fromClass(elements, Immutable.class);
+        AnnotationMirror immutableAnnotation = AnnotationBuilder.fromClass(elements, Immutable.class);
         AnnotationMirror useAnnotation = useType.getAnnotationInHierarchy(immutableAnnotation);
 
         if (useAnnotation != null) {
@@ -323,7 +323,7 @@ public class GlacierVisitor extends BaseTypeVisitor<GlacierAnnotatedTypeFactory>
     protected Set<? extends AnnotationMirror> getExceptionParameterLowerBoundAnnotations() {
     	java.util.HashSet<AnnotationMirror> h = new java.util.HashSet<> (2);
     	
-    	h.add(AnnotationUtils.fromClass(elements, GlacierBottom.class));
+    	h.add(AnnotationBuilder.fromClass(elements, GlacierBottom.class));
     	
         return h;
     }
