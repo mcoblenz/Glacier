@@ -21,7 +21,7 @@ public class Collections {
 
 
 public abstract class AbstractCollection<E> implements Collection<E> {
-    public abstract int size() @ReadOnly;
+    public abstract int size(@ReadOnly AbstractCollection this);
 }
 
 

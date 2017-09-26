@@ -182,7 +182,9 @@ public class GlacierAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         public Void visitExecutable(AnnotatedExecutableType type, GlacierAnnotatedTypeFactory p) {
 
         	// KEY DIFFERENCE VS. SUPERCLASS: Visit the receiver too!
-        	scanAndReduce(type.getReceiverType(), p, null);
+            if (type.getReceiverType() != null) {
+                scanAndReduce(type.getReceiverType(), p, null);
+            }
 
         	// ANOTHER KEY DIFFERENCE VS. SUPERCLASS: visit
             // constructor return types (which somewhat act like

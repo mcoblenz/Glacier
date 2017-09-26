@@ -18,7 +18,7 @@ public class GlacierTypeHierarchy extends DefaultTypeHierarchy {
 	
     public GlacierTypeHierarchy(final BaseTypeChecker checker, final QualifierHierarchy qualifierHierarchy,
             boolean ignoreRawTypes, boolean invariantArrayComponents) {
-    	super(checker, qualifierHierarchy, ignoreRawTypes, invariantArrayComponents, true);
+    	super(checker, qualifierHierarchy, ignoreRawTypes, invariantArrayComponents);
     }
     
     /**
