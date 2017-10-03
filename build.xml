@@ -2,21 +2,22 @@
 <!-- Configuration of the Ant build system to generate a Jar file --> 
 
 <project name="Glacier" default="CreateJar" basedir=".">
-  <fail unless="checker-framework.loc">Must define checker-framework.loc property to the path to the installed checker framework.</fail>
-  <fail message="Checker framework does not exist at given path.">
-    <condition>
-      <not>
-	<resourceexists>
-	  <file file="${checker-framework.loc}"/>
-	</resourceexists>
-      </not>
-    </condition>
-  </fail>
 
-  <property name="jsr308.langtools.dist" value="/Users/mcoblenz/code/jsr308-langtools/dist"/>
+    <property environment="env."/>
 
+    <property name="checker-framework.loc" value="${env.JSR308}/checker-framework/"/>
+
+    <fail unless="env.JSR308">JSR308 environment variable must be set to the to the path containing checker-framework.</fail>
+
+    <fail message="Checker framework does not exist at given path: ${checker-framework.loc}">
+        <condition>
+            <not>
+                <available file="${checker-framework.loc}" type="dir"/>
+            </not>
+        </condition>
+    </fail>
+  
   <property name="glacier.lib" value="${basedir}/Glacier.jar"/>
-   <property name="checker-framework.loc" value="/Users/mcoblenz/code/checker-framework"/>
   <property name="checker.lib" value="${checker-framework.loc}/checker/dist/checker.jar"/>
   <property name="javac.lib" value="${checker-framework.loc}/checker/dist/javac.jar"/>
 
