@@ -1,6 +1,6 @@
 import edu.cmu.cs.glacier.qual.Immutable;
 
-interface AnInterface {};
+interface NA_AnInterface {};
 
 
 public class NullAssignment {
@@ -8,7 +8,7 @@ public class NullAssignment {
     }
     
     public void foo() {
-	AnInterface i = null;
+	NA_AnInterface i = null;
 	takeObj(i);
     }
 }

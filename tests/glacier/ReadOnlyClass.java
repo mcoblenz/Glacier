@@ -11,7 +11,7 @@ class ReadOnlyMethodClass {
 
     int @ReadOnly [] readOnlyIntArray;
     
-    // ::error: (type.invalid)
+    // ::error: (type.invalid.annotations.on.use)
     void takeReadOnlyString(@ReadOnly String foo) {}
     void takeReadOnlyArray(String @ReadOnly [] foo) {
 	// ::error: (glacier.assignment.array)
