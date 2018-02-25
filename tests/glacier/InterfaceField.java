@@ -5,7 +5,7 @@ interface AnInterface {};
 @Immutable interface ImmutableInterface extends AnInterface {};
 
 @Immutable public class InterfaceField {
-    //::error: (glacier.mutable.invalid)
+    // ::error: (glacier.mutable.invalid)
     AnInterface o;
     ImmutableInterface o2;
 }

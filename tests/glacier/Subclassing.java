@@ -11,5 +11,5 @@ class MutSubclass extends Subclassing { };
 @Immutable class ImmutableSuper { };
 @Immutable class ImmutableSub extends ImmutableSuper { };
 
-//::error: (glacier.subclass.mutable)
+// ::error: (glacier.subclass.mutable)
 class InvalidMutableSub extends ImmutableSuper { };

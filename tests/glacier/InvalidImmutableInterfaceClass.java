@@ -7,7 +7,7 @@ import java.lang.Cloneable;
 @Immutable interface ImmutableInterface {
 }
 
-//:: error: glacier.interface.immutable
+// :: error: glacier.interface.immutable
 public class InvalidImmutableInterfaceClass implements Cloneable, ImmutableInterface {
 
 }

@@ -11,12 +11,12 @@ import edu.cmu.cs.glacier.qual.*;
 		
 	}
 	
-	//::error: (type.invalid)
+	// ::error: (type.invalid)
 	public void badMethod(@MaybeMutable IncorrectUsage this) {
 		
 	}
 	
-	//::error: (type.invalid)
+	// ::error: (type.invalid)
 	public void badMethod2(@MaybeMutable IncorrectUsage obj) {
 		
 	}
@@ -32,12 +32,12 @@ class IncorrectUsage2 {
 		
 	}
 	
-	//::error: (type.invalid)
+	// ::error: (type.invalid)
 	public void badMethod(@Immutable IncorrectUsage2 this) {
 		
 	}
 	
-	//::error: (type.invalid)
+	// ::error: (type.invalid)
 	public void badMethod2(@Immutable IncorrectUsage2 obj) {
 		
 	}

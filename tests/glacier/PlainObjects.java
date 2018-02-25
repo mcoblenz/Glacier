@@ -11,7 +11,7 @@ class PlainObjects {
 
 	takeObject(o2);
 
-	//::error: (argument.type.incompatible)
+	// ::error: (argument.type.incompatible)
 	takeImmutableObject(o1);
     }
 }

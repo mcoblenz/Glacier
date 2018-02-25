@@ -11,19 +11,19 @@ public @Immutable class InvalidAssignment {
 	}
 	
 	String s;
-	//:: error: glacier.mutable.invalid
+	// :: error: glacier.mutable.invalid
 	Calendar c;
-	//:: error: glacier.mutable.invalid
+	// :: error: glacier.mutable.invalid
 	Inner i;
 	int x;
 	
 	public void setString(String s) {
-		//:: error: glacier.assignment
+		// :: error: glacier.assignment
 		this.s = s;
 	}
 	
 	public void setX(int x) {
-		//:: error: glacier.assignment
+		// :: error: glacier.assignment
 		this.x = x;
 	}
 	
@@ -40,7 +40,7 @@ class AnotherClass {
     void aMethod() {
 	InvalidAssignment i = new InvalidAssignment();
     
-	//::error: (glacier.assignment)
+	// ::error: (glacier.assignment)
 	i.s = "hello";
     }
 }

@@ -8,7 +8,7 @@ class Inner {
 }
 
 public @Immutable class TransitivityError {
-	//:: error: glacier.mutable.invalid
+	// :: error: glacier.mutable.invalid
 	Inner i;
 	
 	public TransitivityError() {
