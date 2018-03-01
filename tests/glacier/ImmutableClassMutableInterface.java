@@ -1,9 +1,9 @@
 import edu.cmu.cs.glacier.qual.Immutable;
 
-interface MutableInterface {};
+interface ICMI_MutableInterface {};
 
-@Immutable public class ImmutableClassMutableInterface implements MutableInterface {
-    public static void bar(MutableInterface m) { };
+@Immutable public class ImmutableClassMutableInterface implements ICMI_MutableInterface {
+    public static void bar(ICMI_MutableInterface m) { };
 
     public static void foo() {
 	ImmutableClassMutableInterface x = null;

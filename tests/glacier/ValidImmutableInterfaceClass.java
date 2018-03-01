@@ -3,9 +3,9 @@ package edu.cmu.cs.glacier.tests;
 import edu.cmu.cs.glacier.qual.Immutable;
 
 
-@Immutable interface ImmutableInterface {
+@Immutable interface VIIC_ImmutableInterface {
 }
 
-public @Immutable class ValidImmutableInterfaceClass implements ImmutableInterface {
+public @Immutable class ValidImmutableInterfaceClass implements VIIC_ImmutableInterface {
 
 }

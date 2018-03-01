@@ -1,26 +1,13 @@
 package tests;
 
-import static org.checkerframework.framework.test.TestConfigurationBuilder.buildDefaultConfiguration;
-
-import java.io.File;
-import java.util.Collections;
-import java.util.List;
-
-import org.checkerframework.framework.test.CheckerFrameworkTest;
-import org.junit.Test;
+import org.checkerframework.framework.test.CheckerFrameworkPerFileTest;
+import org.checkerframework.framework.test.PerFileSuite;
 import org.junit.runner.Result;
 import org.junit.runner.RunWith;
 import org.junit.runner.notification.Failure;
-import org.junit.runners.*;
-
-
-import org.checkerframework.framework.test.TestConfiguration;
-import org.checkerframework.framework.test.TestUtilities;
-import org.checkerframework.framework.test.TypecheckExecutor;
-import org.checkerframework.framework.test.TypecheckResult;
 import org.junit.runners.Parameterized.Parameters;
 
-import org.checkerframework.framework.test.TestSuite;
+import java.io.File;
 /**
  * JUnit tests for the Glacier Checker -- testing -AskipDefs command-line argument.
  */
@@ -73,8 +60,8 @@ public class GlacierTest {
 		}
 	}
 	
-	@RunWith(TestSuite.class)
-	public static class GlacierCheckerTests extends CheckerFrameworkTest {
+	@RunWith(PerFileSuite.class)
+	public static class GlacierCheckerTests extends CheckerFrameworkPerFileTest {
 	    public GlacierCheckerTests(File testFile) {
 	        super(testFile, edu.cmu.cs.glacier.GlacierChecker.class, "glacier", "-Anomsgtext");
 	    }

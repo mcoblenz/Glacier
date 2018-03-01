@@ -3,13 +3,13 @@ package edu.cmu.cs.glacier.tests;
 import edu.cmu.cs.glacier.qual.Immutable;
 
 
-class Inner { 
+class TE_Inner { 
 	int x;
 }
 
 public @Immutable class TransitivityError {
-	//:: error: glacier.mutable.invalid
-	Inner i;
+	// :: error: glacier.mutable.invalid
+	TE_Inner i;
 	
 	public TransitivityError() {
 	}

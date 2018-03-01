@@ -35,7 +35,7 @@ class Person {
 
 @Immutable public class ImmutablePerson {
 	// Date is mutable
-	//:: error: glacier.mutable.invalid
+	// :: error: glacier.mutable.invalid
 	Date birthdate;
 	
 	public ImmutablePerson() {

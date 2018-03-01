@@ -63,7 +63,7 @@ public class GlacierVisitor extends BaseTypeVisitor<GlacierAnnotatedTypeFactory>
 		boolean foundImmutable = false;
 		
 		List <? extends AnnotationTree> annotations = modifiers.getAnnotations();
-		for (AnnotationMirror a : InternalUtils.annotationsFromTypeAnnotationTrees(annotations)) {
+		for (AnnotationMirror a : TreeUtils.annotationsFromTypeAnnotationTrees(annotations)) {
 	        if (AnnotationUtils.areSameByClass(a,modifier)) {
 	        	foundImmutable = true;
 	        }

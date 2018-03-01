@@ -14,19 +14,19 @@ public class InvalidTypeArguments {
     Generic<ImmutableObject> immutableObjectGeneric;
 
 	class BogusImmutableGeneric<@Immutable T>{}
-	//:: error: (type.argument.type.incompatible)
+	// :: error: (type.argument.type.incompatible)
 	BogusImmutableGeneric<MutableObject> mutableObjectBogusImmutableGeneric;
 	BogusImmutableGeneric<ImmutableObject> immutableObjectBogusImmutableGeneric;
 		
 
     class ImmutableGeneric<@Immutable T extends @Immutable Object>{}
-    //:: error: (type.argument.type.incompatible)
+    // :: error: (type.argument.type.incompatible)
     ImmutableGeneric<MutableObject> mutableObjectImmutableGeneric;
     ImmutableGeneric<ImmutableObject> immutableObjectImmutableGeneric;
 
     class MutableGeneric<@MaybeMutable T>{}
     MutableGeneric<MutableObject> mutableObjectMutableGeneric;
-    //:: error: (type.argument.type.incompatible)
+    // :: error: (type.argument.type.incompatible)
     MutableGeneric<ImmutableObject> immutableObjectMutableGeneric;
 
     public class UnmodifiableCollection {

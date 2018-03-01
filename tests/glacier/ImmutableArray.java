@@ -6,10 +6,10 @@ import edu.cmu.cs.glacier.qual.Immutable;
     private String @Immutable [] _strings;
 
     // Immutable array of mutable objects is mutable.
-    //::error: (glacier.mutable.array.invalid)
+    // ::error: (glacier.mutable.array.invalid)
     private java.util.Date @Immutable [] _dates;
 
     // MaybeMutable array of primitives is mutable.
-    //::error: (glacier.mutable.wholearray.invalid)
+    // ::error: (glacier.mutable.wholearray.invalid)
     private int [] _ints;
 }

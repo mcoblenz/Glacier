@@ -5,7 +5,7 @@ class Mut {
     int y = 3;
 }
 
-//::error: (glacier.nonfinalmember)
+// ::error: (glacier.nonfinalmember)
 @Immutable class Immut extends Mut { }
 
 class SafeAbstractSuperclass {
@@ -22,7 +22,7 @@ class UnsafeAbstractSuperclass {
     final Immut i = null;
 }
 
-//::error: (glacier.nonfinalmember)
+// ::error: (glacier.nonfinalmember)
 @Immutable class Immut3 extends UnsafeAbstractSuperclass { };
 
 
@@ -34,5 +34,5 @@ class UnsafeAbstractSuperclass2 {
     final Immut i = null;
 }
 
-//::error: (glacier.mutablemember)
+// ::error: (glacier.nonfinalmember) ::error: (glacier.mutablemember)
 @Immutable class Immut4 extends UnsafeAbstractSuperclass2 { };

@@ -13,7 +13,7 @@ import edu.cmu.cs.glacier.qual.*;
 
 class EqualsTest2 {
 	@Override
-	//::error: (override.param.invalid)
+	// ::error: (override.param.invalid)
 	public boolean equals(@Immutable Object obj) {
 		if (this == obj)
 			return true;

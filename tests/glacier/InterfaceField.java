@@ -1,11 +1,11 @@
 import edu.cmu.cs.glacier.qual.Immutable;
 
-interface AnInterface {};
+interface IF_AnInterface {};
 
-@Immutable interface ImmutableInterface extends AnInterface {};
+@Immutable interface IF_ImmutableInterface extends IF_AnInterface {};
 
 @Immutable public class InterfaceField {
-    //::error: (glacier.mutable.invalid)
-    AnInterface o;
-    ImmutableInterface o2;
+    // ::error: (glacier.mutable.invalid)
+    IF_AnInterface o;
+    IF_ImmutableInterface o2;
 }

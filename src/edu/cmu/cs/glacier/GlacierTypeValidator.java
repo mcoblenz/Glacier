@@ -50,7 +50,7 @@ public class GlacierTypeValidator extends BaseTypeValidator {
     @Override
     public Void visitDeclared(AnnotatedDeclaredType type, Tree tree) {
     	if (type.hasAnnotation(GlacierBottom.class)) {
-    		reportError(type, tree);
+			reportInvalidType(type, tree);
     	}
     	else {
     		return super.visitDeclared(type, tree);

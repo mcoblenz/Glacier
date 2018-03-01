@@ -10,7 +10,7 @@ public @Immutable class ConstructorAssignment {
     }
 
     void setX() {
-	//::error: (glacier.assignment)
+	// ::error: (glacier.assignment)
 	x = 5;
     }
 }
@@ -18,7 +18,7 @@ public @Immutable class ConstructorAssignment {
 class OtherClass {
     OtherClass() {
 	ConstructorAssignment c = new ConstructorAssignment();
-	//::error: (glacier.assignment)
+	// ::error: (glacier.assignment)
 	c.x = 6;
     }
 }
