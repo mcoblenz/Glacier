@@ -1,0 +1,11 @@
+BUILD INSTRUCTIONS:
+
+1. Install and build the Checker Framework from source. You can find instructions at https://checkerframework.org/manual/#build-source.
+2. In the Glacier directory, build Glacier: ant build -Dchecker-framework.loc=${JSR308}/checker-framework/
+3. You can build Glacier.jar this way: ant -Dchecker-framework.loc=${JSR308}/checker-framework/ CreateJar
+	This will give you Glacier.jar, which you can use as a plugin.
+
+
+TO INSTALL LOCALLY:
+
+mvn install:install-file -Dfile=Glacier.jar -DgroupId=edu.cmu.cs.glacier -DartifactId=glacier -Dversion=1.0 -Dpackaging=jar
